@@ -1,6 +1,9 @@
-// Cloudflare Pages _worker.js —— WQQ 网站访问 IP 记录器（含城市级定位）
-// 每次访问先经过本脚本：记录真实 IP + 时间 + 页面 + 浏览器 + 城市/运营商到 KV，
-// 然后正常返回静态页面。统计页位于 /__stats?key=你的密码
+// Cloudflare Pages _worker.js —— WQQ 网站访问 IP 记录器 + 留言板 API
+// 功能：
+// 1. 每次访问记录真实 IP + 时间 + 页面 + 浏览器 + 城市/运营商到 KV
+// 2. 统计页 /__stats?key=xxx
+// 3. 留言板 API：GET/POST /api/guestbook（KV 存储，带 IP 限流）
+// 4. 访问统计 API：GET /api/stats
 // 城市定位使用 ip-api.com 免费接口（45 次/分钟限速），结果按 IP 缓存 30 天。
 export default {
   async fetch(request, env, ctx) {
@@ -15,9 +18,21 @@ export default {
       return handleStats(env);
     }
 
-    // 记录访问（waitUntil 保证写入在响应后完成；只记录文档请求，跳过图片等静态资源）
+    // 留言板 API
+    if (url.pathname === '/api/guestbook') {
+      if (request.method === 'POST') return handleGuestbookPost(request, env);
+      if (request.method === 'GET') return handleGuestbookGet(env);
+      return new Response('Method Not Allowed', { status: 405 });
+    }
+
+    // 访问统计 API（页面页脚展示用）
+    if (url.pathname === '/api/stats') {
+      return handleStatsApi(env);
+    }
+
+    // 记录访问（waitUntil 保证写入在响应后完成；只记录文档请求，跳过静态资源和 API）
     const isAsset = /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|map|txt)$/i.test(url.pathname);
-    if (!isAsset && request.method === 'GET') {
+    if (!isAsset && !url.pathname.startsWith('/api/') && request.method === 'GET') {
       ctx.waitUntil(recordVisit(request, env, url).catch(() => {}));
     }
 
@@ -25,6 +40,8 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+// ---------- 访问记录 ----------
 
 // 查询 IP 城市信息（带 KV 缓存，避免每次访问都打第三方接口）
 async function getGeo(env, ip) {
@@ -72,6 +89,77 @@ async function recordVisit(request, env, url) {
     })
   );
 }
+
+// ---------- 留言板 ----------
+
+// 读取最近 100 条留言（倒序）
+async function handleGuestbookGet(env) {
+  const msgs = [];
+  try {
+    const list = await env.VISITS.list({ prefix: 'g:', limit: 200 });
+    for (const k of list.keys) {
+      const v = await env.VISITS.get(k.name);
+      if (v) msgs.push(JSON.parse(v));
+    }
+  } catch (e) {
+    return json({ ok: false, error: '读取留言失败' }, 500);
+  }
+  msgs.sort((a, b) => b.t - a.t);
+  return json({ ok: true, messages: msgs.slice(0, 100) });
+}
+
+// 提交留言（带简单限流：每 IP 每 60 秒最多 1 条）
+async function handleGuestbookPost(request, env) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return json({ ok: false, error: '请求格式错误' }, 400);
+  }
+
+  const name = String(body.name || '').trim().slice(0, 20);
+  const text = String(body.text || '').trim().slice(0, 300);
+
+  if (!name) return json({ ok: false, error: '请填写昵称' }, 400);
+  if (!text) return json({ ok: false, error: '请填写留言内容' }, 400);
+
+  // IP 限流：60 秒内同 IP 最多 1 条
+  const rateKey = 'rl:' + ip;
+  const last = await env.VISITS.get(rateKey);
+  const now = Date.now();
+  if (last && now - parseInt(last, 10) < 60000) {
+    const waitSec = Math.ceil((60000 - (now - parseInt(last, 10))) / 1000);
+    return json({ ok: false, error: `操作太频繁，请 ${waitSec} 秒后再试` }, 429);
+  }
+  await env.VISITS.put(rateKey, String(now), { expirationTtl: 120 });
+
+  const key = `g:${now}:${ip}:${Math.random().toString(36).slice(2, 8)}`;
+  await env.VISITS.put(key, JSON.stringify({ name, text, t: now, ip }));
+  return json({ ok: true, message: '留言成功' });
+}
+
+// ---------- 访问统计 API ----------
+
+async function handleStatsApi(env) {
+  try {
+    const list = await env.VISITS.list({ prefix: 'v:', limit: 1000 });
+    const ips = new Set();
+    let total = 0;
+    for (const k of list.keys) {
+      const v = await env.VISITS.get(k.name);
+      if (v) {
+        total++;
+        try { ips.add(JSON.parse(v).ip); } catch (e) {}
+      }
+    }
+    return json({ ok: true, total, uniqIps: ips.size });
+  } catch (e) {
+    return json({ ok: false, error: '统计失败' }, 500);
+  }
+}
+
+// ---------- 统计页 ----------
 
 async function handleStats(env) {
   const rows = [];
@@ -134,21 +222,21 @@ async function handleStats(env) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WQQ 网站访问统计</title>
 <style>
-  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; margin: 0; background: #f5f5f7; color: #1d1d1f; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; margin: 0; background: #eef4fb; color: #1d1d1f; }
   .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
   h1 { font-size: 24px; font-weight: 600; }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 20px 0; }
-  .card { background: #fff; border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  .card .num { font-size: 30px; font-weight: 700; color: #ff6700; }
+  .card { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .card .num { font-size: 30px; font-weight: 700; color: #4a90d9; }
   .card .lbl { font-size: 13px; color: #86868b; margin-top: 4px; }
   .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 14px 0; }
-  .panel { background: #fff; border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 13px; line-height: 1.9; }
+  .panel { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 13px; line-height: 1.9; }
   .panel h2 { font-size: 15px; margin: 0 0 10px; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 12px; }
   th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; white-space: nowrap; }
-  th { background: #fafafa; color: #86868b; font-weight: 500; }
+  th { background: rgba(250,250,250,0.6); color: #86868b; font-weight: 500; }
   td.ua { white-space: normal; max-width: 320px; color: #86868b; }
-  tr:hover td { background: #fff7f0; }
+  tr:hover td { background: #f0f7ff; }
 </style>
 </head>
 <body>
@@ -177,4 +265,13 @@ async function handleStats(env) {
 </html>`;
 
   return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+}
+
+// ---------- 工具 ----------
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+  });
 }
