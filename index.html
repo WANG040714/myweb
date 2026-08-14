@@ -577,6 +577,7 @@
         .contact-icon.douyin { background: linear-gradient(135deg, #40E0D8, #FE2C55); }
         .contact-icon.github { background: linear-gradient(135deg, #4A5568, #2D3748); }
         .contact-icon.email { background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); }
+        .contact-icon.pay { background: linear-gradient(135deg, #FF5A5F, #E63946); }
         .contact-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
         .contact-info { font-size: 13px; color: var(--text-sec); }
 
@@ -986,6 +987,11 @@
                         <h3 class="contact-name">Email</h3>
                         <p class="contact-info">2776802896@qq.com</p>
                     </div>
+                    <div class="contact-card" data-delay="350" onclick="showQR('pay')">
+                        <div class="contact-icon pay">🧋</div>
+                        <h3 class="contact-name">请我喝蜜雪</h3>
+                        <p class="contact-info">扫码请我喝一杯</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1090,7 +1096,8 @@
         const qrData = {
             wechat: { src: 'qr-wechat.png', title: '微信', desc: '扫描二维码添加好友' },
             qq: { src: 'qr-qq.png', title: 'QQ', desc: 'QQ号: 2776802896' },
-            douyin: { src: 'qr-douyin.png', title: '抖音', desc: '抖音号: 164861949u' }
+            douyin: { src: 'qr-douyin.png', title: '抖音', desc: '抖音号: 164861949u' },
+            pay: { src: 'img/qr-pay.webp', title: '请我喝蜜雪 🧋', desc: '支付宝扫一扫，请我喝一杯蜜雪冰城' }
         };
 
         function showQR(type) {
