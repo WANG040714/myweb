@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="WQQ 的个人网站 - 热爱生活，热爱代码，热爱探索未知的世界">
     <title>WQQ · 个人主页</title>
+    <link rel="preload" as="image" href="img/bg-home.webp">
+    <link rel="preload" as="image" href="avatar.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩵</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -43,7 +46,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             z-index: -2;
-            background: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=75&auto=format&fit=crop') center/cover no-repeat fixed;
+            background: url('img/bg-home.webp') center/cover no-repeat;
             transition: background-image 0.6s ease;
             will-change: background-image;
         }
@@ -53,29 +56,23 @@
             inset: 0;
             background: linear-gradient(165deg, rgba(214,234,255,0.55) 0%, rgba(170,205,240,0.42) 40%, rgba(140,185,230,0.5) 100%);
         }
-        /* 漂浮光斑 - 增加玻璃氛围 */
+        /* 漂浮光斑 - 增加玻璃氛围（静态，避免滚动时滤镜重绘开销） */
         .blob {
             position: fixed;
             z-index: -1;
             border-radius: 50%;
-            filter: blur(70px);
-            opacity: 0.5;
+            filter: blur(50px);
+            opacity: 0.4;
             pointer-events: none;
-            animation: blobFloat 18s ease-in-out infinite alternate;
         }
         .blob-1 { width: 380px; height: 380px; background: rgba(140,190,255,0.55); top: -80px; left: -60px; }
-        .blob-2 { width: 300px; height: 300px; background: rgba(190,225,255,0.6); bottom: 8%; right: -60px; animation-delay: -6s; }
-        .blob-3 { width: 260px; height: 260px; background: rgba(120,170,235,0.4); top: 45%; left: 60%; animation-delay: -12s; }
-        @keyframes blobFloat {
-            0% { transform: translate(0,0) scale(1); }
-            100% { transform: translate(40px,-30px) scale(1.12); }
-        }
+        .blob-2 { width: 300px; height: 300px; background: rgba(190,225,255,0.6); bottom: 8%; right: -60px; }
+        .blob-3 { width: 260px; height: 260px; background: rgba(120,170,235,0.4); top: 45%; left: 60%; }
 
         /* ============ 玻璃通用类 ============ */
+        /* 性能优化：卡片不叠加 backdrop-filter（滚动卡顿主因），用半透明背景+高光边框模拟玻璃 */
         .glass {
-            background: var(--glass-bg);
-            -webkit-backdrop-filter: blur(18px) saturate(160%);
-            backdrop-filter: blur(18px) saturate(160%);
+            background: rgba(255,255,255,0.42);
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
             border-radius: var(--radius-lg);
@@ -273,9 +270,7 @@
         .card {
             padding: 34px 30px;
             border-radius: var(--radius-lg);
-            background: var(--glass-bg);
-            -webkit-backdrop-filter: blur(14px) saturate(150%);
-            backdrop-filter: blur(14px) saturate(150%);
+            background: rgba(255,255,255,0.42);
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
             opacity: 0;
@@ -336,9 +331,7 @@
         .tl-item:nth-child(odd) .tl-dot { right: -7px; }
         .tl-item:nth-child(even) .tl-dot { left: -7px; }
         .tl-content {
-            background: var(--glass-bg);
-            -webkit-backdrop-filter: blur(14px) saturate(150%);
-            backdrop-filter: blur(14px) saturate(150%);
+            background: rgba(255,255,255,0.42);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius);
             padding: 26px;
@@ -357,9 +350,7 @@
         /* ============ 技能 ============ */
         .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 26px; }
         .skill-group {
-            background: var(--glass-bg);
-            -webkit-backdrop-filter: blur(14px) saturate(150%);
-            backdrop-filter: blur(14px) saturate(150%);
+            background: rgba(255,255,255,0.42);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 30px;
@@ -528,9 +519,7 @@
         .gb-item {
             padding: 22px 24px;
             border-radius: var(--radius);
-            background: var(--glass-bg);
-            -webkit-backdrop-filter: blur(12px) saturate(150%);
-            backdrop-filter: blur(12px) saturate(150%);
+            background: rgba(255,255,255,0.42);
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
             animation: gbIn 0.35s ease;
@@ -555,9 +544,7 @@
             justify-content: center;
         }
         .contact-card {
-            background: var(--glass-bg);
-            -webkit-backdrop-filter: blur(14px) saturate(150%);
-            backdrop-filter: blur(14px) saturate(150%);
+            background: rgba(255,255,255,0.42);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 30px 18px;
@@ -1031,27 +1018,27 @@
     </footer>
 
     <script>
-        // ============ 页面背景图映射（淡蓝色玻璃氛围） ============
+        // ============ 页面背景图映射（本地同源，走 Cloudflare CDN） ============
         const pageBgs = {
-            home: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=75&auto=format&fit=crop',
-            about: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=75&auto=format&fit=crop',
-            skills: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1920&q=75&auto=format&fit=crop',
-            works: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1920&q=75&auto=format&fit=crop',
-            guestbook: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&q=75&auto=format&fit=crop',
-            contact: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=75&auto=format&fit=crop'
+            home: 'img/bg-home.webp',
+            about: 'img/bg-about.webp',
+            skills: 'img/bg-skills.webp',
+            works: 'img/bg-works.webp',
+            guestbook: 'img/bg-guestbook.webp',
+            contact: 'img/bg-contact.webp'
         };
 
-        // ============ 作品集数据（高清风景/建筑图） ============
+        // ============ 作品集数据（本地高清风景/建筑图） ============
         const works = [
-            { src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80&auto=format&fit=crop', title: '山巅云海', tag: '风景' },
-            { src: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=900&q=80&auto=format&fit=crop', title: '晨光森林', tag: '自然' },
-            { src: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=900&q=80&auto=format&fit=crop', title: '绿野仙踪', tag: '自然' },
-            { src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&q=80&auto=format&fit=crop', title: '静谧湖畔', tag: '风景' },
-            { src: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=900&q=80&auto=format&fit=crop', title: '纯净建筑', tag: '建筑' },
-            { src: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&q=80&auto=format&fit=crop', title: '城市天际', tag: '建筑' },
-            { src: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=900&q=80&auto=format&fit=crop', title: '现代光影', tag: '建筑' },
-            { src: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&q=80&auto=format&fit=crop', title: '雪峰之下', tag: '风景' },
-            { src: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=900&q=80&auto=format&fit=crop', title: '海湾大桥', tag: '建筑' }
+            { src: 'img/w1.webp', title: '山巅云海', tag: '风景' },
+            { src: 'img/w2.webp', title: '晨光森林', tag: '自然' },
+            { src: 'img/w3.webp', title: '绿野仙踪', tag: '自然' },
+            { src: 'img/w4.webp', title: '静谧湖畔', tag: '风景' },
+            { src: 'img/w5.webp', title: '纯净建筑', tag: '建筑' },
+            { src: 'img/w6.webp', title: '城市天际', tag: '建筑' },
+            { src: 'img/w7.webp', title: '现代光影', tag: '建筑' },
+            { src: 'img/w8.webp', title: '雪峰之下', tag: '风景' },
+            { src: 'img/w9.webp', title: '海湾大桥', tag: '建筑' }
         ];
 
         // ============ 页面切换 ============
