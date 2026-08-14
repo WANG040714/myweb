@@ -28,6 +28,95 @@ const KNOWN_BOTS = [
   'petalbot', 'applebot', 'linkedinbot', 'pinterest'
 ];
 
+// ---------- 机型代码 → 商业名称映射表（Android UA 报的是内部型号代码） ----------
+const MODEL_NAMES = {
+  // ===== vivo X 系列 =====
+  'V2241HA': 'vivo X90s', 'V2241A': 'vivo X90', 'V2183A': 'vivo X80',
+  'V2145A': 'vivo X70 Pro', 'V2118A': 'vivo X70', 'V2134A': 'vivo X70 Pro+',
+  'V2056A': 'vivo X60 Pro', 'V2046A': 'vivo X60', 'V2049A': 'vivo X60s',
+  'V1938A': 'vivo X30 Pro', 'V1932A': 'vivo X30', 'V1914A': 'vivo X27 Pro',
+  'V1829A': 'vivo X27', 'V1809A': 'vivo X23', 'V1818A': 'vivo X21s',
+  // ===== vivo S 系列 =====
+  'V2309A': 'vivo S18 Pro', 'V2283A': 'vivo S17 Pro', 'V2254A': 'vivo S16',
+  'V2203A': 'vivo S16 Pro', 'V2207A': 'vivo S15 Pro', 'V2199A': 'vivo S15',
+  'V2185A': 'vivo S12 Pro', 'V2163A': 'vivo S12', 'V2130A': 'vivo S10 Pro',
+  'V2121A': 'vivo S10', 'V2009A': 'vivo S6', 'V1930A': 'vivo S5',
+  // ===== vivo Y 系列 =====
+  'V2232A': 'vivo Y100', 'V2229A': 'vivo Y77', 'V2206A': 'vivo Y76s',
+  'V2111A': 'vivo Y71t', 'V2106A': 'vivo Y72', 'V2100A': 'vivo Y53s',
+  'V2066A': 'vivo Y30', 'V2043A': 'vivo Y31s', 'V1928A': 'vivo Y7s',
+  // ===== iQOO =====
+  'V2243A': 'iQOO 11', 'V2217A': 'iQOO Neo7', 'V2180A': 'iQOO 10',
+  'V2178A': 'iQOO 9 Pro', 'V2171A': 'iQOO 9', 'V2141A': 'iQOO 8',
+  'V2144A': 'iQOO 8 Pro', 'V2116A': 'iQOO Neo5', 'V2054A': 'iQOO 7',
+  'V2011A': 'iQOO 3',
+  // ===== OPPO Find =====
+  'PHZ110': 'OPPO Find X7 Ultra', 'PHY110': 'OPPO Find X7', 'PHN110': 'OPPO Find X6',
+  'PHW110': 'OPPO Find X6 Pro', 'PGU110': 'OPPO Find N2 Flip', 'PGW110': 'OPPO Find N2',
+  'PGEM10': 'OPPO Find N3', 'PFFM20': 'OPPO Find X5', 'PFFM10': 'OPPO Find X5 Pro',
+  'PEEM00': 'OPPO Find X3 Pro', 'PEHM00': 'OPPO Find X3', 'PDEM10': 'OPPO Find X2 Pro',
+  'PDHM00': 'OPPO Find X2',
+  // ===== OPPO Reno =====
+  'PHJ110': 'OPPO Reno11', 'PHV110': 'OPPO Reno11 Pro', 'PHQ110': 'OPPO Reno9 Pro+',
+  'PGY110': 'OPPO Reno8', 'PGJM10': 'OPPO Reno8 Pro+', 'PEXM00': 'OPPO Reno6 Pro',
+  'PEYM00': 'OPPO Reno6', 'PDSM00': 'OPPO Reno5 Pro', 'PDNM00': 'OPPO Reno5',
+  'PDPM00': 'OPPO Reno4 Pro', 'PDCM00': 'OPPO Reno4',
+  // ===== 小米 =====
+  'M2101K7AG': '小米 11', 'M2011K2C': '小米 11', 'M2102K1C': '小米 11 Pro',
+  'M2102K1AC': '小米 11 Ultra', '2201122C': '小米 12', '2201123C': '小米 12 Pro',
+  '2203121C': '小米 12S', '2206122SC': '小米 12S Ultra', '2211133C': '小米 13',
+  '2210132C': '小米 13 Pro', '23127PN0CC': '小米 14', '23116PN5BC': '小米 14 Pro',
+  '24031PN0DC': '小米 15', '24090PN7DC': '小米 15 Pro',
+  // ===== Redmi =====
+  '2107119DC': 'Redmi K40', '22021211RC': 'Redmi K50', '22122RK93C': 'Redmi K60',
+  '23117RK66C': 'Redmi K70', '21091116C': 'Redmi Note 11', '22101317C': 'Redmi Note 12',
+  '2312DRA50C': 'Redmi Note 13 Pro', '23049RAD8C': 'Redmi Note 12 Turbo',
+  'M2006C3LC': 'Redmi 9A', '220233L2C': 'Redmi 10A', '23076RA4BC': 'Redmi Note 12 Pro',
+  'M2104K10AC': 'Redmi Note 10 Pro',
+  // ===== 华为 Mate =====
+  'ALN-AL00': '华为 Mate 60', 'BRA-AL00': '华为 Mate 60 Pro', 'ALT-AL00': '华为 Mate 60 Pro+',
+  'LIO-AL00': '华为 Mate 40 Pro', 'NOP-AN00': '华为 Mate 40 Pro+', 'TAS-AL00': '华为 Mate 30 Pro',
+  'LYA-AL00': '华为 Mate 20 Pro', 'LON-AL00': '华为 Mate 20', 'NXT-AL10': '华为 Mate 9',
+  // ===== 华为 P 系列 =====
+  'TNY-AL00': '华为 P40', 'ELS-AN00': '华为 P40 Pro', 'ELE-AL00': '华为 P30',
+  'VOG-AL00': '华为 P30 Pro', 'JAD-AL50': '华为 P50 Pro', 'ABR-AL00': '华为 P50',
+  'BNE-AL00': '华为 P50 Pocket', 'BAL-AL00': '华为 nova 7', 'GLK-AL00': '华为 nova 5 Pro',
+  'BRT-AL00': '华为 nova 6', 'JER-AN10': '华为 nova 8 Pro',
+  // ===== 荣耀 =====
+  'PGT-AN10': '荣耀 Magic5', 'PGT-AN20': '荣耀 Magic5 Pro', 'LGE-AN10': '荣耀 Magic4 Pro',
+  'ELZ-AN00': '荣耀 Magic4', 'VER-AN10': '荣耀 Magic V2', 'REA-AN00': '荣耀 90',
+  'REP-AN00': '荣耀 90 Pro', 'VNE-AN00': '荣耀 80', 'ANB-AN00': '荣耀 80 Pro',
+  'SDY-AN00': '荣耀 70', 'HPB-AN00': '荣耀 70 Pro', 'LSA-AN00': '荣耀 60',
+  'NTH-AN00': '荣耀 50', 'ALI-AN00': '荣耀 X50', 'RKY-AN00': '荣耀 X40',
+  // ===== 三星 Galaxy =====
+  'SM-S928B': '三星 Galaxy S24 Ultra', 'SM-S921B': '三星 Galaxy S24', 'SM-S926B': '三星 Galaxy S24+',
+  'SM-S931B': '三星 Galaxy S25', 'SM-S938B': '三星 Galaxy S25 Ultra', 'SM-S936B': '三星 Galaxy S25+',
+  'SM-S918B': '三星 Galaxy S23 Ultra', 'SM-S911B': '三星 Galaxy S23', 'SM-S916B': '三星 Galaxy S23+',
+  'SM-S901B': '三星 Galaxy S22', 'SM-S908B': '三星 Galaxy S22 Ultra',
+  'SM-G991B': '三星 Galaxy S21', 'SM-G998B': '三星 Galaxy S21 Ultra',
+  'SM-A556B': '三星 Galaxy A55', 'SM-A546B': '三星 Galaxy A54', 'SM-A536B': '三星 Galaxy A53',
+  'SM-A525F': '三星 Galaxy A52', 'SM-A145R': '三星 Galaxy A14',
+  'SM-F946B': '三星 Galaxy Z Fold5', 'SM-F936B': '三星 Galaxy Z Fold4',
+  'SM-F731B': '三星 Galaxy Z Flip5', 'SM-F721B': '三星 Galaxy Z Flip4',
+  'SM-N986B': '三星 Galaxy Note20 Ultra', 'SM-N975F': '三星 Galaxy Note10+',
+  // ===== OnePlus =====
+  'PHK110': '一加 11', 'PHB110': '一加 11 Pro', 'PJZ110': '一加 12',
+  'PGZ110': '一加 Ace2', 'PJA110': '一加 Ace3', 'PJX110': '一加 Ace3 Pro',
+  // ===== 魅族 =====
+  'M971Q': '魅族 21', 'M461Q': '魅族 20', 'M381Q': '魅族 20 Pro'
+};
+
+// 通用型号代码模式 → 品牌反推（UA 不标品牌时的兜底）
+const CODE_TO_BRAND = [
+  [/^V\d{4}/, 'vivo'], [/^v\d{4}/, 'vivo'], [/^i?QOO/i, 'iQOO'],
+  [/^CPH\d{4}/, 'OPPO'], [/^P[A-Z]{2}M\d/, 'OPPO'], [/^PH[A-Z]\d{3}/, 'OPPO'],
+  [/^M\d{7}/, '小米'], [/^22\d{5}/, '小米'], [/^23\d{5}/, '小米'],
+  [/^SM-[A-Z0-9]+/, '三星'], [/^GT-\d+/, '三星'],
+  [/^ELS|^VOG|^TNY|^ELE/, '华为'],
+  [/^PGT|^LGE|^REA|^VNE|^SDY|^LSA|^NTH|^ALI|^RKY|^ANB|^HPB|^VER|^ELZ|^REP/, '荣耀'],
+  [/^[A-Z]{3}-[A-Z0-9]{2,4}/, '华为']
+];
+
 // ---------- 设备识别（精简版 ua-parser-js 思路） ----------
 function detectDevice(ua) {
   if (!ua || ua === '-') return { type: '未知', brand: '未知', model: '未知', os: '未知', browser: '未知' };
@@ -42,8 +131,9 @@ function detectDevice(ua) {
 
   // --- 品牌 ---
   if (/iphone|ipad|ipod|mac os|macintosh/i.test(u)) d.brand = 'Apple';
+  else if (/honor|hihonor|荣耀/i.test(u)) d.brand = '荣耀';
+  else if (/huawei|harmonyos|emui/i.test(u)) d.brand = 'Huawei';
   else if (/xiaomi|miui|redmi|poco|mi-|mix\d|mi \d/i.test(u)) d.brand = 'Xiaomi';
-  else if (/huawei|honor|harmonyos|emui/i.test(u)) d.brand = 'Huawei';
   else if (/oppo|realme|coloros|cp[h-z]\d{4}|peem\d|p[a-z]{2}m\d/i.test(u)) d.brand = 'OPPO';
   else if (/vivo|funtouch|originos|v\d{4}|v2\d{3}|iQOO/i.test(u)) d.brand = 'vivo';
   else if (/samsung|sm-[a-z0-9]+/i.test(u)) d.brand = 'Samsung';
@@ -86,13 +176,20 @@ function detectDevice(ua) {
     for (const bp of brandPrefixes) {
       if (mod.toLowerCase().startsWith(bp.toLowerCase())) { mod = mod.slice(bp.length).trim(); break; }
     }
-    d.model = mod || (d.brand !== '未知' ? d.brand : 'Android 设备');
-    // 某些机型品牌未命中时，根据型号反推品牌（vivo/OPPO 型号特征）
+    // 某些机型品牌未命中时，根据型号代码反推品牌
     if (d.brand === '未知') {
-      if (/^V\d{4}|^v\d{4}|^i?QOO/i.test(mod)) d.brand = 'vivo';
-      else if (/^CPH\d{4}|^P[A-Z]{2}M\d/i.test(mod)) d.brand = 'OPPO';
+      for (const [re, br] of CODE_TO_BRAND) {
+        if (re.test(mod)) { d.brand = br; break; }
+      }
     }
-    if (d.brand !== '未知') d.model = d.brand + ' ' + d.model;
+    // 查映射表：型号代码 → 商业名称（如 V2241HA → vivo X90s）
+    const code = mod.toUpperCase();
+    if (MODEL_NAMES[code]) {
+      d.model = MODEL_NAMES[code];
+    } else {
+      d.model = mod || (d.brand !== '未知' ? d.brand : 'Android 设备');
+      if (d.brand !== '未知') d.model = d.brand + ' ' + d.model;
+    }
   }
   // Windows
   else if ((m = ua.match(/Windows NT\s*([\d.]+)/i))) {
