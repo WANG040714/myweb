@@ -278,10 +278,13 @@
             transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
         .card.visible { opacity: 1; transform: translateY(0); }
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--glass-shadow-lg);
-            border-color: var(--glass-border-hover);
+        /* 触屏设备禁用 hover 位移动画（滚动卡顿主因） */
+        @media (hover: hover) and (pointer: fine) {
+            .card:hover {
+                transform: translateY(-6px);
+                box-shadow: var(--glass-shadow-lg);
+                border-color: var(--glass-border-hover);
+            }
         }
         .card-icon {
             width: 54px; height: 54px;
@@ -338,10 +341,12 @@
             box-shadow: var(--glass-shadow);
             transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
         }
-        .tl-content:hover {
-            border-color: var(--glass-border-hover);
-            box-shadow: var(--glass-shadow-lg);
-            transform: translateY(-3px);
+        @media (hover: hover) and (pointer: fine) {
+            .tl-content:hover {
+                border-color: var(--glass-border-hover);
+                box-shadow: var(--glass-shadow-lg);
+                transform: translateY(-3px);
+            }
         }
         .tl-date { font-size: 13px; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; }
         .tl-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
@@ -395,17 +400,19 @@
             aspect-ratio: 4/3;
         }
         .work-item.visible { opacity: 1; transform: translateY(0); }
-        .work-item:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--glass-shadow-lg);
-        }
         .work-item img {
             width: 100%; height: 100%;
             object-fit: cover;
             display: block;
             transition: transform 0.5s ease;
         }
-        .work-item:hover img { transform: scale(1.06); }
+        @media (hover: hover) and (pointer: fine) {
+            .work-item:hover {
+                transform: translateY(-6px);
+                box-shadow: var(--glass-shadow-lg);
+            }
+            .work-item:hover img { transform: scale(1.06); }
+        }
         .work-overlay {
             position: absolute;
             inset: 0;
@@ -551,15 +558,23 @@
             text-align: center;
             cursor: pointer;
             box-shadow: var(--glass-shadow);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            transition: transform 0.3s ease;
             opacity: 0;
             transform: translateY(24px);
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform, opacity;
         }
         .contact-card.visible { opacity: 1; transform: translateY(0); }
-        .contact-card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--glass-shadow-lg);
-            border-color: var(--glass-border-hover);
+        /* 触屏设备不启用 hover 位移/阴影动画（滚动卡顿主因），仅桌面鼠标设备启用 */
+        @media (hover: hover) and (pointer: fine) {
+            .contact-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            }
+            .contact-card:hover {
+                transform: translateY(-6px);
+                box-shadow: var(--glass-shadow-lg);
+                border-color: var(--glass-border-hover);
+            }
         }
         .contact-icon {
             width: 58px; height: 58px;
@@ -628,7 +643,11 @@
             height: auto;
             object-fit: contain;
             border-radius: 8px;
+            opacity: 0;
+            transform: scale(0.96);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
+        .modal-img.loaded { opacity: 1; transform: scale(1); }
         .modal-title { font-size: 19px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
         .modal-desc { font-size: 14px; color: var(--text-sec); margin-bottom: 22px; }
         .modal-close {
@@ -1094,19 +1113,36 @@
 
         // ============ 二维码弹窗 ============
         const qrData = {
-            wechat: { src: 'qr-wechat.png', title: '微信', desc: '扫描二维码添加好友' },
-            qq: { src: 'qr-qq.png', title: 'QQ', desc: 'QQ号: 2776802896' },
-            douyin: { src: 'qr-douyin.png', title: '抖音', desc: '抖音号: 164861949u' },
+            wechat: { src: 'img/qr-wechat.webp', title: '微信', desc: '扫描二维码添加好友' },
+            qq: { src: 'img/qr-qq.webp', title: 'QQ', desc: 'QQ号: 2776802896' },
+            douyin: { src: 'img/qr-douyin.webp', title: '抖音', desc: '抖音号: 164861949u' },
             pay: { src: 'img/qr-pay.webp', title: '请我喝蜜雪 🧋', desc: '支付宝扫一扫，请我喝一杯蜜雪冰城' }
         };
 
         function showQR(type) {
             const data = qrData[type];
-            document.getElementById('modalImg').src = data.src;
+            const img = document.getElementById('modalImg');
+            // 先重置淡入状态，图片加载完成后平滑淡入
+            img.classList.remove('loaded');
+            if (img.src !== data.src) {
+                img.src = data.src;
+                img.onload = () => img.classList.add('loaded');
+                img.onerror = () => img.classList.add('loaded'); // 加载失败也不卡住弹窗
+            } else {
+                img.classList.add('loaded');
+            }
             document.getElementById('modalTitle').textContent = data.title;
             document.getElementById('modalDesc').textContent = data.desc;
             document.getElementById('qrModal').classList.add('show');
         }
+
+        // 预加载所有二维码图片，点击时秒开
+        (function preloadQR() {
+            Object.values(qrData).forEach(d => {
+                const i = new Image();
+                i.src = d.src;
+            });
+        })();
 
         function closeModal(e) {
             if (e.target === e.currentTarget) {
