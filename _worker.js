@@ -2,7 +2,7 @@
 // 每次访问先经过本脚本：记录真实 IP + 时间 + 页面 + 浏览器到 KV，
 // 然后正常返回静态页面。统计页位于 /__stats?key=你的密码
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const STATS_KEY = env.STATS_KEY || 'wqq2026';
 
@@ -14,8 +14,11 @@ export default {
       return handleStats(env);
     }
 
-    // 记录访问（后台写入，不阻塞页面响应）
-    recordVisit(request, env, url).catch(() => {});
+    // 记录访问（waitUntil 保证写入在响应后完成；只记录文档请求，跳过图片等静态资源）
+    const isAsset = /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|map|txt)$/i.test(url.pathname);
+    if (!isAsset && request.method === 'GET') {
+      ctx.waitUntil(recordVisit(request, env, url).catch(() => {}));
+    }
 
     // 正常返回静态页面
     return env.ASSETS.fetch(request);
