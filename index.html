@@ -20,7 +20,6 @@
             --border: rgba(0,0,0,0.06);
             --shadow: 0 2px 20px rgba(0,0,0,0.06);
             --shadow-lg: 0 8px 40px rgba(0,0,0,0.1);
-            --glass: rgba(255,255,255,0.85);
             --radius: 16px;
             --radius-lg: 24px;
         }
@@ -36,18 +35,16 @@
             overflow-x: hidden;
         }
         
-        /* Navigation */
+        /* Navigation - 不用 backdrop-filter 提升性能 */
         nav {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            background: var(--glass);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            background: rgba(255,255,255,0.95);
             border-bottom: 1px solid var(--border);
-            transition: all 0.3s ease;
+            will-change: transform;
         }
         
         .nav-content {
@@ -65,7 +62,6 @@
             font-weight: 700;
             color: var(--primary);
             text-decoration: none;
-            letter-spacing: -0.5px;
         }
         
         .nav-links {
@@ -78,13 +74,11 @@
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
-            transition: color 0.3s;
+            transition: color 0.2s;
             position: relative;
         }
         
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--primary);
-        }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
         
         .nav-links a::after {
             content: '';
@@ -94,13 +88,19 @@
             width: 0;
             height: 2px;
             background: var(--primary);
-            transition: width 0.3s;
+            transition: width 0.2s;
             border-radius: 1px;
         }
         
-        .nav-links a:hover::after, .nav-links a.active::after {
-            width: 100%;
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+        
+        /* Page System */
+        .page {
+            display: none;
+            min-height: 100vh;
         }
+        
+        .page.active { display: block; }
         
         /* Hero */
         .hero {
@@ -112,34 +112,13 @@
             text-align: center;
             padding: 120px 24px 80px;
             background: linear-gradient(180deg, #FFF 0%, #FAFAF8 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 50%, rgba(255,103,0,0.03) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 30%, rgba(255,133,51,0.03) 0%, transparent 50%);
-            animation: bgFloat 20s ease-in-out infinite;
-        }
-        
-        @keyframes bgFloat {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-2%, -2%); }
         }
         
         .avatar-wrap {
-            position: relative;
-            z-index: 1;
             margin-bottom: 32px;
             opacity: 0;
-            transform: scale(0.8);
-            animation: fadeInScale 0.8s ease forwards;
+            transform: scale(0.85);
+            animation: fadeInScale 0.6s ease forwards;
         }
         
         .avatar {
@@ -147,63 +126,52 @@
             height: 180px;
             border-radius: 50%;
             object-fit: cover;
-            box-shadow: 0 20px 60px rgba(255,103,0,0.2);
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 16px 48px rgba(255,103,0,0.2);
             border: 4px solid #FFF;
+            transition: transform 0.3s ease;
         }
         
-        .avatar:hover { transform: scale(1.08) rotate(3deg); }
+        .avatar:hover { transform: scale(1.05); }
         
         .avatar-ring {
             position: absolute;
-            top: -6px;
-            left: -6px;
-            right: -6px;
-            bottom: -6px;
+            top: -6px; left: -6px; right: -6px; bottom: -6px;
             border-radius: 50%;
             border: 2px solid var(--primary);
             opacity: 0;
-            animation: ringPulse 2.5s ease-in-out infinite;
-            animation-delay: 1s;
+            animation: ringPulse 2.5s ease-in-out infinite 1s;
         }
         
         .hero-title {
-            font-size: 64px;
+            font-size: 60px;
             font-weight: 800;
             letter-spacing: -2px;
             margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
             opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s ease forwards 0.3s;
-            background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards 0.2s;
+            background: linear-gradient(135deg, var(--text), var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
         .hero-subtitle {
-            font-size: 20px;
-            font-weight: 400;
+            font-size: 19px;
             color: var(--text-sec);
             max-width: 500px;
             margin-bottom: 40px;
-            position: relative;
-            z-index: 1;
             opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s ease forwards 0.5s;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards 0.35s;
         }
         
         .hero-btns {
             display: flex;
             gap: 16px;
-            position: relative;
-            z-index: 1;
             opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s ease forwards 0.7s;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards 0.5s;
         }
         
         .btn {
@@ -215,7 +183,7 @@
             font-size: 16px;
             font-weight: 500;
             text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.25s ease;
             cursor: pointer;
             border: none;
         }
@@ -229,7 +197,7 @@
         .btn-primary:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255,103,0,0.4);
+            box-shadow: 0 6px 20px rgba(255,103,0,0.35);
         }
         
         .btn-outline {
@@ -264,29 +232,27 @@
             border-radius: 980px;
             font-size: 13px;
             font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
             margin-bottom: 16px;
         }
         
         .section-title {
-            font-size: 42px;
+            font-size: 40px;
             font-weight: 700;
             letter-spacing: -1px;
             margin-bottom: 16px;
         }
         
         .section-desc {
-            font-size: 18px;
+            font-size: 17px;
             color: var(--text-sec);
             max-width: 560px;
             margin: 0 auto;
         }
         
-        /* Cards Grid */
+        /* Cards */
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
         
@@ -294,10 +260,9 @@
             background: var(--bg-card);
             border-radius: var(--radius-lg);
             padding: 40px;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             opacity: 0;
-            transform: translateY(40px);
-            cursor: default;
+            transform: translateY(30px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
             border: 1px solid transparent;
         }
         
@@ -307,76 +272,62 @@
         }
         
         .card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-6px);
             box-shadow: var(--shadow-lg);
             border-color: rgba(255,103,0,0.1);
         }
         
         .card-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
-            font-size: 28px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            box-shadow: 0 8px 20px rgba(255,103,0,0.2);
+            margin-bottom: 20px;
+            font-size: 26px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            box-shadow: 0 6px 16px rgba(255,103,0,0.2);
         }
         
         .card-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         
         .card-desc {
-            font-size: 15px;
+            font-size: 14px;
             color: var(--text-sec);
             line-height: 1.7;
         }
         
-        /* Page System */
-        .page {
-            display: none;
-            min-height: 100vh;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.4s ease;
-        }
-        
-        .page.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
+        /* Page Header */
         .page-header {
             padding: 120px 24px 60px;
             text-align: center;
-            background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg) 100%);
+            background: var(--bg-warm);
         }
         
         .page-title {
-            font-size: 48px;
+            font-size: 46px;
             font-weight: 700;
             letter-spacing: -1.5px;
             margin-bottom: 16px;
         }
         
         .page-desc {
-            font-size: 18px;
+            font-size: 17px;
             color: var(--text-sec);
             max-width: 500px;
             margin: 0 auto;
         }
         
-        /* Skills Bars */
+        /* Skills */
         .skills-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 32px;
+            gap: 28px;
         }
         
         .skill-group {
@@ -384,8 +335,8 @@
             border-radius: var(--radius-lg);
             padding: 32px;
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.5s ease;
+            transform: translateY(25px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
         
         .skill-group.visible {
@@ -394,7 +345,7 @@
         }
         
         .skill-group-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
             margin-bottom: 20px;
             display: flex;
@@ -402,20 +353,18 @@
             gap: 10px;
         }
         
-        .skill-item {
-            margin-bottom: 16px;
-        }
+        .skill-item { margin-bottom: 14px; }
         
         .skill-name {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
             color: var(--text-sec);
         }
         
         .skill-bar {
-            height: 6px;
+            height: 5px;
             background: rgba(0,0,0,0.06);
             border-radius: 3px;
             overflow: hidden;
@@ -426,12 +375,10 @@
             background: linear-gradient(90deg, var(--primary), var(--primary-light));
             border-radius: 3px;
             width: 0;
-            transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: width 1s ease;
         }
         
-        .skill-group.visible .skill-fill {
-            width: var(--width);
-        }
+        .skill-group.visible .skill-fill { width: var(--width); }
         
         /* Timeline */
         .timeline {
@@ -455,8 +402,8 @@
             width: 50%;
             padding: 20px 40px;
             opacity: 0;
-            transform: translateX(-30px);
-            transition: all 0.6s ease;
+            transform: translateX(-25px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
         
         .tl-item.visible {
@@ -466,7 +413,7 @@
         
         .tl-item:nth-child(even) {
             margin-left: 50%;
-            transform: translateX(30px);
+            transform: translateX(25px);
         }
         
         .tl-item:nth-child(even).visible { transform: translateX(0); }
@@ -476,7 +423,7 @@
             border-radius: var(--radius);
             padding: 28px;
             border: 1px solid var(--border);
-            transition: all 0.3s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         
         .tl-content:hover {
@@ -484,43 +431,33 @@
             box-shadow: var(--shadow);
         }
         
-        .tl-date {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 8px;
+        .tl-date { font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+        .tl-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+        .tl-desc { font-size: 14px; color: var(--text-sec); }
+        
+        /* Contact - 居中对称布局 */
+        .contact-wrapper {
+            display: flex;
+            justify-content: center;
         }
         
-        .tl-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .tl-desc {
-            font-size: 14px;
-            color: var(--text-sec);
-        }
-        
-        /* Contact Cards */
         .contact-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(3, 200px);
             gap: 24px;
-            max-width: 900px;
-            margin: 0 auto;
+            justify-content: center;
         }
         
         .contact-card {
             background: var(--bg-card);
             border-radius: var(--radius-lg);
-            padding: 32px;
+            padding: 32px 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: 1px solid transparent;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(25px);
         }
         
         .contact-card.visible {
@@ -529,20 +466,20 @@
         }
         
         .contact-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-6px);
             box-shadow: var(--shadow-lg);
-            border-color: rgba(255,103,0,0.15);
+            border-color: rgba(255,103,0,0.12);
         }
         
         .contact-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 20px;
-            margin: 0 auto 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            margin: 0 auto 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 26px;
         }
         
         .contact-icon.wechat { background: linear-gradient(135deg, #07C160, #06AD56); }
@@ -551,33 +488,20 @@
         .contact-icon.github { background: linear-gradient(135deg, #333, #1A1A1A); }
         .contact-icon.email { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
         
-        .contact-name {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
+        .contact-name { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+        .contact-info { font-size: 13px; color: var(--text-sec); }
         
-        .contact-info {
-            font-size: 14px;
-            color: var(--text-sec);
-        }
-        
-        /* QR Modal */
+        /* QR Modal - 修复图片比例 */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
             z-index: 2000;
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.25s;
         }
         
         .modal-overlay.show {
@@ -588,38 +512,36 @@
         .modal {
             background: #FFF;
             border-radius: var(--radius-lg);
-            padding: 40px;
+            padding: 36px;
             text-align: center;
-            max-width: 360px;
+            max-width: 380px;
             width: 90%;
-            transform: scale(0.9);
-            transition: transform 0.3s;
-            box-shadow: var(--shadow-lg);
+            transform: scale(0.92);
+            transition: transform 0.25s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
         
-        .modal-overlay.show .modal {
-            transform: scale(1);
+        .modal-overlay.show .modal { transform: scale(1); }
+        
+        .modal-img-wrap {
+            display: inline-block;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #FFF;
         }
         
         .modal-img {
-            width: 200px;
-            height: 200px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            object-fit: cover;
+            display: block;
+            max-width: 260px;
+            max-height: 360px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
         
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .modal-desc {
-            font-size: 14px;
-            color: var(--text-sec);
-            margin-bottom: 24px;
-        }
+        .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+        .modal-desc { font-size: 14px; color: var(--text-sec); margin-bottom: 24px; }
         
         .modal-close {
             padding: 10px 28px;
@@ -629,13 +551,10 @@
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
         
-        .modal-close:hover {
-            background: var(--primary);
-            color: #FFF;
-        }
+        .modal-close:hover { background: var(--primary); color: #FFF; }
         
         /* Footer */
         footer {
@@ -646,40 +565,36 @@
             border-top: 1px solid var(--border);
         }
         
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
+        footer a { color: var(--primary); text-decoration: none; }
         
         /* Back to Top */
         .back-top {
             position: fixed;
             bottom: 32px;
             right: 32px;
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             background: var(--primary);
             color: #FFF;
             border: none;
             border-radius: 50%;
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s;
+            transform: translateY(16px);
+            transition: opacity 0.25s, transform 0.25s;
             z-index: 999;
-            box-shadow: 0 4px 16px rgba(255,103,0,0.3);
+            box-shadow: 0 4px 12px rgba(255,103,0,0.3);
+            pointer-events: none;
         }
         
         .back-top.show {
             opacity: 1;
             transform: translateY(0);
+            pointer-events: auto;
         }
         
-        .back-top:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(255,103,0,0.4);
-        }
+        .back-top:hover { transform: translateY(-3px); }
         
         /* Animations */
         @keyframes fadeInScale {
@@ -692,26 +607,27 @@
         
         @keyframes ringPulse {
             0%, 100% { opacity: 0; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.06); }
+            50% { opacity: 0.35; transform: scale(1.05); }
         }
         
         /* Responsive */
         @media (max-width: 768px) {
-            .hero-title { font-size: 44px; }
-            .hero-subtitle { font-size: 17px; }
-            .section-title { font-size: 32px; }
-            .page-title { font-size: 36px; }
+            .hero-title { font-size: 42px; }
+            .hero-subtitle { font-size: 16px; }
+            .section-title { font-size: 30px; }
+            .page-title { font-size: 34px; }
             .nav-links { display: none; }
             .hero-btns { flex-direction: column; align-items: center; }
             .timeline::before { left: 20px; }
             .tl-item { width: 100%; padding-left: 56px; padding-right: 16px; }
             .tl-item:nth-child(even) { margin-left: 0; }
             .cards { grid-template-columns: 1fr; }
-            .contact-grid { grid-template-columns: 1fr 1fr; }
+            .contact-grid { grid-template-columns: repeat(2, 160px); }
+            .modal-img { max-width: 220px; max-height: 300px; }
         }
         
         @media (max-width: 480px) {
-            .contact-grid { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: repeat(2, 150px); gap: 16px; }
         }
     </style>
 </head>
@@ -719,12 +635,12 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-content">
-            <a href="#" class="nav-logo" onclick="showPage('home')">WQQ</a>
+            <a href="#" class="nav-logo" onclick="showPage('home'); return false;">WQQ</a>
             <div class="nav-links">
-                <a href="#" onclick="showPage('home')" data-page="home" class="active">首页</a>
-                <a href="#" onclick="showPage('about')" data-page="about">关于</a>
-                <a href="#" onclick="showPage('skills')" data-page="skills">技能</a>
-                <a href="#" onclick="showPage('contact')" data-page="contact">联系</a>
+                <a href="#" onclick="showPage('home'); return false;" data-page="home" class="active">首页</a>
+                <a href="#" onclick="showPage('about'); return false;" data-page="about">关于</a>
+                <a href="#" onclick="showPage('skills'); return false;" data-page="skills">技能</a>
+                <a href="#" onclick="showPage('contact'); return false;" data-page="contact">联系</a>
             </div>
         </div>
     </nav>
@@ -743,7 +659,6 @@
                 <a href="#" class="btn btn-outline" onclick="showPage('contact'); return false;">联系我</a>
             </div>
         </section>
-
         <section>
             <div class="section-header">
                 <div class="section-tag">亮点</div>
@@ -889,31 +804,33 @@
             <p class="page-desc">期待与你交流，一起探索更多可能</p>
         </div>
         <section>
-            <div class="contact-grid">
-                <div class="contact-card" data-delay="0" onclick="showQR('wechat')">
-                    <div class="contact-icon wechat">💬</div>
-                    <h3 class="contact-name">微信</h3>
-                    <p class="contact-info">扫码添加好友</p>
-                </div>
-                <div class="contact-card" data-delay="100" onclick="showQR('qq')">
-                    <div class="contact-icon qq">🐧</div>
-                    <h3 class="contact-name">QQ</h3>
-                    <p class="contact-info">2776802896</p>
-                </div>
-                <div class="contact-card" data-delay="200" onclick="showQR('douyin')">
-                    <div class="contact-icon douyin">🎵</div>
-                    <h3 class="contact-name">抖音</h3>
-                    <p class="contact-info">名字二百买的</p>
-                </div>
-                <div class="contact-card" data-delay="300" onclick="window.open('https://github.com/WANG040714', '_blank')">
-                    <div class="contact-icon github">🐙</div>
-                    <h3 class="contact-name">GitHub</h3>
-                    <p class="contact-info">WANG040714</p>
-                </div>
-                <div class="contact-card" data-delay="400" onclick="window.location.href='mailto:wqq@example.com'">
-                    <div class="contact-icon email">📧</div>
-                    <h3 class="contact-name">Email</h3>
-                    <p class="contact-info">发送邮件</p>
+            <div class="contact-wrapper">
+                <div class="contact-grid">
+                    <div class="contact-card" data-delay="0" onclick="showQR('wechat')">
+                        <div class="contact-icon wechat">💬</div>
+                        <h3 class="contact-name">微信</h3>
+                        <p class="contact-info">扫码添加好友</p>
+                    </div>
+                    <div class="contact-card" data-delay="80" onclick="showQR('qq')">
+                        <div class="contact-icon qq">🐧</div>
+                        <h3 class="contact-name">QQ</h3>
+                        <p class="contact-info">2776802896</p>
+                    </div>
+                    <div class="contact-card" data-delay="160" onclick="showQR('douyin')">
+                        <div class="contact-icon douyin">🎵</div>
+                        <h3 class="contact-name">抖音</h3>
+                        <p class="contact-info">名字二百买的</p>
+                    </div>
+                    <div class="contact-card" data-delay="240" onclick="window.open('https://github.com/WANG040714', '_blank')">
+                        <div class="contact-icon github">🐙</div>
+                        <h3 class="contact-name">GitHub</h3>
+                        <p class="contact-info">WANG040714</p>
+                    </div>
+                    <div class="contact-card" data-delay="320" onclick="window.location.href='mailto:wqq@example.com'">
+                        <div class="contact-icon email">📧</div>
+                        <h3 class="contact-name">Email</h3>
+                        <p class="contact-info">发送邮件</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -922,7 +839,9 @@
     <!-- QR Modal -->
     <div class="modal-overlay" id="qrModal" onclick="closeModal(event)">
         <div class="modal">
-            <img id="modalImg" class="modal-img" src="" alt="QR Code">
+            <div class="modal-img-wrap">
+                <img id="modalImg" class="modal-img" src="" alt="QR Code">
+            </div>
             <h3 class="modal-title" id="modalTitle"></h3>
             <p class="modal-desc" id="modalDesc"></p>
             <button class="modal-close" onclick="document.getElementById('qrModal').classList.remove('show')">关闭</button>
@@ -930,7 +849,7 @@
     </div>
 
     <!-- Back to Top -->
-    <button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+    <button class="back-top" id="backTop" onclick="window.scrollTo({top:0})">↑</button>
 
     <!-- Footer -->
     <footer>
@@ -940,27 +859,21 @@
     <script>
         // Page Navigation
         function showPage(name) {
-            document.querySelectorAll('.page').forEach(p => {
-                p.classList.remove('active');
-            });
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('page-' + name).classList.add('active');
-            
             document.querySelectorAll('.nav-links a').forEach(a => {
                 a.classList.remove('active');
                 if (a.dataset.page === name) a.classList.add('active');
             });
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Re-trigger animations
-            setTimeout(() => observeElements(), 100);
+            window.scrollTo(0, 0);
+            requestAnimationFrame(() => observeElements());
         }
         
         // QR Modal
         const qrData = {
-            wechat: { src: 'wechat-qr.png', title: '微信', desc: '扫描二维码添加好友' },
-            qq: { src: 'qq-qr.png', title: 'QQ', desc: 'QQ号: 2776802896' },
-            douyin: { src: 'douyin-qr.png', title: '抖音', desc: '抖音号: 164861949u' }
+            wechat: { src: 'qr-wechat.png', title: '微信', desc: '扫描二维码添加好友' },
+            qq: { src: 'qr-qq.png', title: 'QQ', desc: 'QQ号: 2776802896' },
+            douyin: { src: 'qr-douyin.png', title: '抖音', desc: '抖音号: 164861949u' }
         };
         
         function showQR(type) {
@@ -977,9 +890,11 @@
             }
         }
         
-        // Intersection Observer
+        // Intersection Observer - 性能优化
+        let observer;
         function observeElements() {
-            const observer = new IntersectionObserver((entries) => {
+            if (observer) observer.disconnect();
+            observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const delay = parseInt(entry.target.dataset.delay) || 0;
@@ -987,26 +902,31 @@
                         observer.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+            }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
             
             document.querySelectorAll('.card, .tl-item, .skill-group, .contact-card').forEach(el => {
-                if (!el.classList.contains('visible')) {
-                    observer.observe(el);
-                }
+                if (!el.classList.contains('visible')) observer.observe(el);
             });
         }
         
-        // Back to Top button
+        // Back to Top - 节流
+        let scrollTick = false;
         window.addEventListener('scroll', () => {
-            const btn = document.getElementById('backTop');
-            if (window.scrollY > 300) {
-                btn.classList.add('show');
-            } else {
-                btn.classList.remove('show');
+            if (!scrollTick) {
+                requestAnimationFrame(() => {
+                    const btn = document.getElementById('backTop');
+                    if (window.scrollY > 300) {
+                        btn.classList.add('show');
+                    } else {
+                        btn.classList.remove('show');
+                    }
+                    scrollTick = false;
+                });
+                scrollTick = true;
             }
-        });
+        }, { passive: true });
         
-        // Avatar error fallback
+        // Avatar fallback
         document.getElementById('avatar').addEventListener('error', function() {
             this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSI5MCIgZmlsbD0iI0Y3RjdGNSIvPjxjaXJjbGUgY3g9IjkwIiBjeT0iNzIiIHI9IjMwIiBmaWxsPSIjREREIi8+PHBhdGggZD0iNTAgMTIwYzAtMjIgMTgtNDAgNDAtNDBzNDAgMTggNDAgNDAiIGZpbGw9IiNEREQiLz48L3N2Zz4=';
         });
