@@ -250,7 +250,7 @@ export default {
       if (url.searchParams.get('key') !== STATS_KEY) {
         return new Response('403 Forbidden', { status: 403 });
       }
-      return handleStats(env);
+      return handleStats(env, request);
     }
 
     // 留言板 API
@@ -383,8 +383,9 @@ async function handleStatsApi(env) {
     const list = await env.VISITS.list({ prefix: 'v:', limit: 1000 });
     const ips = new Set();
     let total = 0;
-    for (const k of list.keys) {
-      const v = await env.VISITS.get(k.name);
+    // 并行读取，避免串行等待
+    const values = await Promise.all(list.keys.map(k => env.VISITS.get(k.name).catch(() => null)));
+    for (const v of values) {
       if (v) {
         total++;
         try { ips.add(JSON.parse(v).ip); } catch (e) {}
@@ -398,14 +399,22 @@ async function handleStatsApi(env) {
 
 // ---------- 统计页 ----------
 
-async function handleStats(env) {
+async function handleStats(env, request) {
+  // 用 Cache API 缓存统计页 60 秒，避免每次请求都全量读 KV（大幅提速）
+  const cache = caches.default;
+  const cacheKey = new Request(request.url, { method: 'GET' });
+  try {
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+  } catch (e) { /* 缓存不可用则继续实时计算 */ }
+
+  // 只读取 v: 前缀的访问记录（跳过 geo/g/rl 键），并行 get 大幅提速
   const rows = [];
   try {
-    const list = await env.VISITS.list({ limit: 1000 });
-    for (const k of list.keys) {
-      if (!k.name.startsWith('v:')) continue; // 跳过 geo 缓存键
-      const v = await env.VISITS.get(k.name);
-      if (v) rows.push(JSON.parse(v));
+    const list = await env.VISITS.list({ prefix: 'v:', limit: 800 });
+    const values = await Promise.all(list.keys.map(k => env.VISITS.get(k.name).catch(() => null)));
+    for (const v of values) {
+      if (v) { try { rows.push(JSON.parse(v)); } catch (e) {} }
     }
   } catch (e) {
     return new Response('统计读取失败：' + e.message, { status: 500 });
@@ -659,7 +668,17 @@ async function handleStats(env) {
 </body>
 </html>`;
 
-  return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  const resp = new Response(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=60', // 允许 Cloudflare 边缘缓存 60 秒
+    },
+  });
+  // 写入 Cache API（60 秒内同一 URL 直接命中缓存）
+  try {
+    await cache.put(cacheKey, resp.clone());
+  } catch (e) {}
+  return resp;
 }
 
 // ---------- 工具 ----------
