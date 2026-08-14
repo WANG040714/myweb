@@ -3,37 +3,679 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>谢雪晴是小猪吗？</title>
+    <title>WQQ - Personal Website</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        html, body {
-            height: 100%;
-            width: 100%;
-            background-color: #ffffff;
+        
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f7;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent: #0071e3;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.2);
         }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .nav-logo {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 24px 80px;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+        
+        .avatar-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 32px;
+            opacity: 0;
+            transform: scale(0.8);
+            animation: fadeInScale 1s ease forwards;
+        }
+        
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: transform 0.5s ease;
+        }
+        
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        .avatar-ring {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            opacity: 0;
+            animation: pulse 2s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+        
+        .hero-title {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 0.3s;
+        }
+        
+        .hero-subtitle {
+            font-size: 21px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 0.5s;
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 980px;
+            font-size: 17px;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 0.7s;
+        }
+        
+        .cta-button:hover {
+            background: #0077ed;
+            transform: scale(1.02);
+        }
+        
+        /* Sections */
+        section {
+            padding: 100px 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+        
+        .section-title {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .section-subtitle {
+            font-size: 19px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #00c6fb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 24px;
+        }
+        
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+        
+        .card-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+        }
+        
+        .timeline-item {
+            position: relative;
+            width: 50%;
+            padding: 20px 40px;
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.6s ease;
+        }
+        
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .timeline-item:nth-child(even) {
+            margin-left: 50%;
+            transform: translateX(30px);
+        }
+        
+        .timeline-item:nth-child(even).visible {
+            transform: translateX(0);
+        }
+        
+        .timeline-content {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 32px;
+            position: relative;
+        }
+        
+        .timeline-date {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        
+        .timeline-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .timeline-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+        
+        /* Contact */
+        .contact-section {
+            background: var(--bg-secondary);
+            border-radius: 40px;
+            padding: 80px 40px;
+            text-align: center;
+            margin: 0 24px 100px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .contact-links {
             display: flex;
             justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
+            gap: 24px;
+            margin-top: 40px;
+            flex-wrap: wrap;
         }
-        .container {
-            font-size: 5rem;
-            color: #000000;
-            font-weight: bold;
-            letter-spacing: 0.05em;
+        
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: var(--bg-primary);
+            border-radius: 100px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .contact-link:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .contact-link svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Footer */
+        footer {
             text-align: center;
+            padding: 40px 24px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* Animations */
+        @keyframes fadeInScale {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.05);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 40px;
+            }
+            
+            .hero-subtitle {
+                font-size: 18px;
+            }
+            
+            .section-title {
+                font-size: 32px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-item {
+                width: 100%;
+                padding-left: 60px;
+                padding-right: 20px;
+            }
+            
+            .timeline-item:nth-child(even) {
+                margin-left: 0;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 1.5s;
+        }
+        
+        .scroll-indicator .mouse {
+            width: 26px;
+            height: 40px;
+            border: 2px solid var(--text-secondary);
+            border-radius: 13px;
+            position: relative;
+        }
+        
+        .scroll-indicator .wheel {
+            width: 4px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 2px;
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll 2s ease-in-out infinite;
+        }
+        
+        @keyframes scroll {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(12px);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">谢雪晴是小猪吗？</div>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-content">
+            <a href="#" class="nav-logo">WQQ</a>
+            <div class="nav-links">
+                <a href="#about">关于</a>
+                <a href="#skills">技能</a>
+                <a href="#timeline">经历</a>
+                <a href="#contact">联系</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="avatar-container">
+            <div class="avatar-ring"></div>
+            <img src="https://raw.githubusercontent.com/WANG040714/myweb/main/avatar.png" alt="WQQ Avatar" class="avatar" id="avatar">
+        </div>
+        <h1 class="hero-title">WQQ</h1>
+        <p class="hero-subtitle">热爱生活，热爱代码，热爱探索未知的世界。</p>
+        <a href="#about" class="cta-button">
+            了解更多
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1V11M6 11L11 6M6 11L1 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-header">
+            <h2 class="section-title">关于我</h2>
+            <p class="section-subtitle">一个充满好奇心的探索者，喜欢用代码创造美好的事物。</p>
+        </div>
+        <div class="cards-grid">
+            <div class="card" data-delay="0">
+                <div class="card-icon">🎨</div>
+                <h3 class="card-title">创意设计</h3>
+                <p class="card-description">追求简洁优雅的设计，相信好的设计能够改变世界。喜欢探索新的设计趋势和技术。</p>
+            </div>
+            <div class="card" data-delay="100">
+                <div class="card-icon">💻</div>
+                <h3 class="card-title">技术开发</h3>
+                <p class="card-description">热爱编程，享受用代码解决问题的过程。专注于前端开发，追求极致的用户体验。</p>
+            </div>
+            <div class="card" data-delay="200">
+                <div class="card-icon">🚀</div>
+                <h3 class="card-title">持续学习</h3>
+                <p class="card-description">保持好奇心，不断学习新知识。相信学习是最好的投资，也是成长的阶梯。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills">
+        <div class="section-header">
+            <h2 class="section-title">技能专长</h2>
+            <p class="section-subtitle">在不断实践中积累经验，在持续学习中提升能力。</p>
+        </div>
+        <div class="cards-grid">
+            <div class="card" data-delay="0">
+                <div class="card-icon">⚡</div>
+                <h3 class="card-title">前端开发</h3>
+                <p class="card-description">HTML5, CSS3, JavaScript, React, Vue.js, 响应式设计, 性能优化</p>
+            </div>
+            <div class="card" data-delay="100">
+                <div class="card-icon">🛠️</div>
+                <h3 class="card-title">开发工具</h3>
+                <p class="card-description">Git, VS Code, Webpack, Vite, npm, Docker, CI/CD</p>
+            </div>
+            <div class="card" data-delay="200">
+                <div class="card-icon">📱</div>
+                <h3 class="card-title">跨平台开发</h3>
+                <p class="card-description">React Native, Flutter, Electron, 小程序开发</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline">
+        <div class="section-header">
+            <h2 class="section-title">成长经历</h2>
+            <p class="section-subtitle">每一步都是成长，每一次经历都是财富。</p>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item" data-delay="0">
+                <div class="timeline-content">
+                    <div class="timeline-date">2024 - 至今</div>
+                    <h3 class="timeline-title">技术探索</h3>
+                    <p class="timeline-desc">深入学习前端技术栈，探索新的开发模式和工具。</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-delay="200">
+                <div class="timeline-content">
+                    <div class="timeline-date">2023</div>
+                    <h3 class="timeline-title">项目实践</h3>
+                    <p class="timeline-desc">参与多个项目开发，积累实战经验，提升技术能力。</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-delay="400">
+                <div class="timeline-content">
+                    <div class="timeline-date">2022</div>
+                    <h3 class="timeline-title">学习成长</h3>
+                    <p class="timeline-desc">开始系统学习编程，打下坚实的基础。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="contact-section">
+            <h2 class="section-title">联系我</h2>
+            <p class="section-subtitle">期待与你交流，一起探索更多可能。</p>
+            <div class="contact-links">
+                <a href="https://github.com/WANG040714" class="contact-link" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+                <a href="mailto:wqq@example.com" class="contact-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    Email
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 WQQ. All rights reserved.</p>
+    </footer>
+
     <script>
-        // 可以在这里添加交互逻辑
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const delay = entry.target.dataset.delay || 0;
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, delay);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.querySelectorAll('.card, .timeline-item').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar background change on scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.style.background = 'rgba(255, 255, 255, 0.95)';
+            } else {
+                nav.style.background = 'rgba(255, 255, 255, 0.8)';
+            }
+        });
+
+        // Avatar error handling
+        document.getElementById('avatar').addEventListener('error', function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY3Ii8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSI0MCIgZmlsbD0iI0QxRDFEMSIvPjxwYXRoIGQ9Ik02MCAxNDBjMC0yMi4wOTEgMTcuOTA5LTQwIDQwLTQwczQwIDE3LjkwOSA0MCA0MCIgZmlsbD0iI0QxRDFEMSIvPgo8L3N2Zz4K';
+        });
     </script>
 </body>
 </html>
