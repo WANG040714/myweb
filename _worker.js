@@ -1,6 +1,7 @@
-// Cloudflare Pages _worker.js —— WQQ 网站访问 IP 记录器
-// 每次访问先经过本脚本：记录真实 IP + 时间 + 页面 + 浏览器到 KV，
+// Cloudflare Pages _worker.js —— WQQ 网站访问 IP 记录器（含城市级定位）
+// 每次访问先经过本脚本：记录真实 IP + 时间 + 页面 + 浏览器 + 城市/运营商到 KV，
 // 然后正常返回静态页面。统计页位于 /__stats?key=你的密码
+// 城市定位使用 ip-api.com 免费接口（45 次/分钟限速），结果按 IP 缓存 30 天。
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -25,15 +26,51 @@ export default {
   },
 };
 
+// 查询 IP 城市信息（带 KV 缓存，避免每次访问都打第三方接口）
+async function getGeo(env, ip) {
+  if (!ip || ip === '-') return null;
+  try {
+    const cached = await env.VISITS.get('geo:' + ip);
+    if (cached) return JSON.parse(cached);
+  } catch (e) {}
+  try {
+    const resp = await fetch(
+      'http://ip-api.com/json/' + encodeURIComponent(ip) + '?fields=status,country,regionName,city,isp,query&lang=zh-CN',
+      { headers: { 'User-Agent': 'wqq-site' } }
+    );
+    const data = await resp.json();
+    if (data && data.status === 'success') {
+      const geo = { city: data.city || null, region: data.regionName || null, isp: data.isp || null };
+      // 缓存 30 天
+      await env.VISITS.put('geo:' + ip, JSON.stringify(geo), { expirationTtl: 2592000 }).catch(() => {});
+      return geo;
+    }
+  } catch (e) {}
+  return null;
+}
+
 async function recordVisit(request, env, url) {
   const ip = request.headers.get('CF-Connecting-IP') || '-';
   const country = request.headers.get('CF-IPCountry') || '-';
   const ua = (request.headers.get('User-Agent') || '-').slice(0, 200);
   const path = url.pathname;
   const t = Date.now();
+  const geo = await getGeo(env, ip);
   // key 唯一：时间戳 + IP + 随机串
   const key = `v:${t}:${ip}:${Math.random().toString(36).slice(2, 8)}`;
-  await env.VISITS.put(key, JSON.stringify({ ip, country, path, ua, t }));
+  await env.VISITS.put(
+    key,
+    JSON.stringify({
+      ip,
+      country,
+      city: geo ? geo.city : null,
+      region: geo ? geo.region : null,
+      isp: geo ? geo.isp : null,
+      path,
+      ua,
+      t,
+    })
+  );
 }
 
 async function handleStats(env) {
@@ -41,6 +78,7 @@ async function handleStats(env) {
   try {
     const list = await env.VISITS.list({ limit: 1000 });
     for (const k of list.keys) {
+      if (!k.name.startsWith('v:')) continue; // 跳过 geo 缓存键
       const v = await env.VISITS.get(k.name);
       if (v) rows.push(JSON.parse(v));
     }
@@ -54,24 +92,38 @@ async function handleStats(env) {
   const byDay = {};
   const byPath = {};
   const byCountry = {};
+  const byCity = {};
   for (const r of rows) {
     const d = new Date(r.t).toISOString().slice(0, 10);
     byDay[d] = (byDay[d] || 0) + 1;
     byPath[r.path] = (byPath[r.path] || 0) + 1;
     byCountry[r.country] = (byCountry[r.country] || 0) + 1;
+    const city = r.city || (r.country === 'CN' ? '中国(未知城市)' : r.country);
+    byCity[city] = (byCity[city] || 0) + 1;
   }
   const dayStr = Object.entries(byDay).map(([d, c]) => `${d}: ${c} 次`).join('<br>');
   const pathStr = Object.entries(byPath).sort((a, b) => b[1] - a[1]).map(([p, c]) => `${p} — ${c}`).join('<br>');
   const countryStr = Object.entries(byCountry).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c}: ${n}`).join(' / ');
+  const cityStr = Object.entries(byCity).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c}: ${n}`).join('<br>');
 
   const esc = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const fmtLoc = (r) => {
+    const parts = [];
+    if (r.city) parts.push(r.city);
+    if (r.region && r.region !== r.city) parts.push(r.region);
+    if (r.country && r.country !== '-') parts.push(r.country);
+    const main = parts.length ? esc(parts.join('，')) : esc(r.country || '-');
+    const sub = r.isp ? `<div style="color:#86868b">${esc(r.isp)}</div>` : '';
+    return main + sub;
+  };
 
   const trs = rows
     .slice(0, 500)
     .map(
       (r) =>
-        `<tr><td>${esc(r.ip)}</td><td>${new Date(r.t).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</td><td>${esc(r.path)}</td><td>${esc(r.country)}</td><td class="ua">${esc(r.ua)}</td></tr>`
+        `<tr><td>${esc(r.ip)}</td><td>${new Date(r.t).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</td><td>${esc(r.path)}</td><td>${fmtLoc(r)}</td><td class="ua">${esc(r.ua)}</td></tr>`
     )
     .join('');
 
@@ -111,11 +163,12 @@ async function handleStats(env) {
     <div class="panel"><h2>📅 按天</h2>${dayStr || '暂无'}</div>
     <div class="panel"><h2>🧭 访问页面</h2>${pathStr || '暂无'}</div>
     <div class="panel"><h2>🌍 国家/地区</h2>${countryStr || '暂无'}</div>
+    <div class="panel"><h2>📍 城市 TOP</h2>${cityStr || '暂无'}</div>
   </div>
   <h2 style="font-size:16px">🕒 最近访问明细</h2>
   <div style="overflow-x:auto">
   <table>
-    <thead><tr><th>IP</th><th>时间（北京时间）</th><th>页面</th><th>地区</th><th>User-Agent</th></tr></thead>
+    <thead><tr><th>IP</th><th>时间（北京时间）</th><th>页面</th><th>位置 / 运营商</th><th>User-Agent</th></tr></thead>
     <tbody>${trs || '<tr><td colspan="5">还没有记录</td></tr>'}</tbody>
   </table>
   </div>
