@@ -6,7 +6,7 @@
     <meta name="description" content="WQQ 的个人网站 - 热爱生活，热爱代码，热爱探索未知的世界">
     <title>WQQ · 个人主页</title>
     <link rel="preload" as="image" href="img/bg-home.webp">
-    <link rel="preload" as="image" href="avatar.png">
+    <link rel="preload" as="image" href="img/avatar.webp">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩵</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -782,7 +782,7 @@
             <div class="hero-card glass">
                 <div class="avatar-wrap">
                     <div class="avatar-ring"></div>
-                    <img src="avatar.png" alt="WQQ" class="avatar" id="avatar">
+                    <img src="img/avatar.webp" alt="WQQ" class="avatar" id="avatar">
                 </div>
                 <h1 class="hero-title">WQQ</h1>
                 <p class="hero-subtitle" id="heroSubtitle">热爱生活，热爱代码，热爱探索未知的世界。</p>
@@ -1083,6 +1083,22 @@
             window.scrollTo(0, 0);
             requestAnimationFrame(() => observeElements());
             if (name === 'guestbook') loadGuestbook();
+        }
+
+        // 浏览器空闲时预加载其余页面背景图，切换时秒开不白屏
+        const bgPreloaded = new Set(['home']);
+        function preloadPageBgs() {
+            Object.entries(pageBgs).forEach(([pg, src]) => {
+                if (bgPreloaded.has(pg)) return;
+                bgPreloaded.add(pg);
+                const i = new Image();
+                i.src = src;
+            });
+        }
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => preloadPageBgs(), { timeout: 3000 });
+        } else {
+            setTimeout(preloadPageBgs, 2000);
         }
 
         function toggleNav(e) {
