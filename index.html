@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="WQQ 的个人网站 - 热爱生活，热爱代码，热爱探索未知的世界">
     <title>WQQ · 个人主页</title>
-    <link rel="preload" as="image" href="img/bg-home.webp">
-    <link rel="preload" as="image" href="img/avatar.webp">
+    <link rel="preload" as="image" href="r2/img/bg-home.webp">
+    <link rel="preload" as="image" href="r2/img/avatar.webp">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩵</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,7 +46,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             z-index: -2;
-            background: url('img/bg-home.webp') center/cover no-repeat;
+            background: url('r2/img/bg-home.webp') center/cover no-repeat;
             transition: background-image 0.6s ease;
             will-change: background-image;
         }
@@ -782,7 +782,7 @@
             <div class="hero-card glass">
                 <div class="avatar-wrap">
                     <div class="avatar-ring"></div>
-                    <img src="img/avatar.webp" alt="WQQ" class="avatar" id="avatar">
+                    <img src="r2/img/avatar.webp" alt="WQQ" class="avatar" id="avatar">
                 </div>
                 <h1 class="hero-title">WQQ</h1>
                 <p class="hero-subtitle" id="heroSubtitle">热爱生活，热爱代码，热爱探索未知的世界。</p>
@@ -1045,25 +1045,25 @@
     <script>
         // ============ 页面背景图映射（本地同源，走 Cloudflare CDN） ============
         const pageBgs = {
-            home: 'img/bg-home.webp',
-            about: 'img/bg-about.webp',
-            skills: 'img/bg-skills.webp',
-            works: 'img/bg-works.webp',
-            guestbook: 'img/bg-guestbook.webp',
-            contact: 'img/bg-contact.webp'
+            home: 'r2/img/bg-home.webp',
+            about: 'r2/img/bg-about.webp',
+            skills: 'r2/img/bg-skills.webp',
+            works: 'r2/img/bg-works.webp',
+            guestbook: 'r2/img/bg-guestbook.webp',
+            contact: 'r2/img/bg-contact.webp'
         };
 
         // ============ 作品集数据（本地高清风景/建筑图） ============
         const works = [
-            { src: 'img/w1.webp', title: '山巅云海', tag: '风景' },
-            { src: 'img/w2.webp', title: '晨光森林', tag: '自然' },
-            { src: 'img/w3.webp', title: '绿野仙踪', tag: '自然' },
-            { src: 'img/w4.webp', title: '静谧湖畔', tag: '风景' },
-            { src: 'img/w5.webp', title: '纯净建筑', tag: '建筑' },
-            { src: 'img/w6.webp', title: '城市天际', tag: '建筑' },
-            { src: 'img/w7.webp', title: '现代光影', tag: '建筑' },
-            { src: 'img/w8.webp', title: '雪峰之下', tag: '风景' },
-            { src: 'img/w9.webp', title: '海湾大桥', tag: '建筑' }
+            { src: 'r2/img/w1.webp', title: '山巅云海', tag: '风景' },
+            { src: 'r2/img/w2.webp', title: '晨光森林', tag: '自然' },
+            { src: 'r2/img/w3.webp', title: '绿野仙踪', tag: '自然' },
+            { src: 'r2/img/w4.webp', title: '静谧湖畔', tag: '风景' },
+            { src: 'r2/img/w5.webp', title: '纯净建筑', tag: '建筑' },
+            { src: 'r2/img/w6.webp', title: '城市天际', tag: '建筑' },
+            { src: 'r2/img/w7.webp', title: '现代光影', tag: '建筑' },
+            { src: 'r2/img/w8.webp', title: '雪峰之下', tag: '风景' },
+            { src: 'r2/img/w9.webp', title: '海湾大桥', tag: '建筑' }
         ];
 
         // ============ 页面切换 ============
@@ -1129,10 +1129,10 @@
 
         // ============ 二维码弹窗 ============
         const qrData = {
-            wechat: { src: 'img/qr-wechat.webp', title: '微信', desc: '扫描二维码添加好友' },
-            qq: { src: 'img/qr-qq.webp', title: 'QQ', desc: 'QQ号: 2776802896' },
-            douyin: { src: 'img/qr-douyin.webp', title: '抖音', desc: '抖音号: 164861949u' },
-            pay: { src: 'img/qr-pay.webp', title: '请我喝蜜雪 🧋', desc: '支付宝扫一扫，请我喝一杯蜜雪冰城' }
+            wechat: { src: 'r2/img/qr-wechat.webp', title: '微信', desc: '扫描二维码添加好友' },
+            qq: { src: 'r2/img/qr-qq.webp', title: 'QQ', desc: 'QQ号: 2776802896' },
+            douyin: { src: 'r2/img/qr-douyin.webp', title: '抖音', desc: '抖音号: 164861949u' },
+            pay: { src: 'r2/img/qr-pay.webp', title: '请我喝蜜雪 🧋', desc: '支付宝扫一扫，请我喝一杯蜜雪冰城' }
         };
 
         function showQR(type) {
