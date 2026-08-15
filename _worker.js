@@ -265,6 +265,22 @@ export default {
       return handleStatsApi(env);
     }
 
+    // R2 图片代理：/r2/xxx.webp → 从 R2 bucket 读取（图片已存 R2 store/img/）
+    if (url.pathname.startsWith('/r2/') && env.STORE) {
+      try {
+        const key = url.pathname.slice(4); // 去掉 /r2/
+        const obj = await env.STORE.get(key);
+        if (!obj) return new Response('Not Found', { status: 404 });
+        const headers = new Headers();
+        obj.writeHttpMetadata(headers);
+        headers.set('etag', obj.httpEtag);
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+        return new Response(obj.body, { headers });
+      } catch (e) {
+        return new Response('R2 Error: ' + e.message, { status: 500 });
+      }
+    }
+
     // 记录访问（waitUntil 保证写入在响应后完成；只记录文档请求，跳过静态资源和 API）
     const isAsset = /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|map|txt)$/i.test(url.pathname);
     if (!isAsset && !url.pathname.startsWith('/api/') && request.method === 'GET') {
