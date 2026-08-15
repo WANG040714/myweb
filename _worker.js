@@ -687,10 +687,10 @@ async function handleStats(env, request) {
   const resp = new Response(html, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=60', // 允许 Cloudflare 边缘缓存 60 秒
+      'Cache-Control': 'public, max-age=300', // Cloudflare 边缘缓存 5 分钟
     },
   });
-  // 写入 Cache API（60 秒内同一 URL 直接命中缓存）
+  // 写入 Cache API（5 分钟内同一 URL 直接命中缓存，首次加载也接近静态速度）
   try {
     await cache.put(cacheKey, resp.clone());
   } catch (e) {}
