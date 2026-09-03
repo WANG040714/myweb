@@ -394,13 +394,38 @@ async function handleGuestbookPost(request, env) {
 
 // ---------- 访问统计 API ----------
 
+// 游标分页遍历所有 v: 前缀键（避免 limit 截断导致新记录读不到）
+async function listAllVisitKeys(env, pageSize = 1000) {
+  const keys = [];
+  let cursor;
+  do {
+    const opts = { prefix: 'v:', limit: pageSize };
+    if (cursor) opts.cursor = cursor;
+    const list = await env.VISITS.list(opts);
+    for (const k of list.keys) keys.push(k.name);
+    cursor = list.list_complete ? undefined : list.cursor;
+  } while (cursor);
+  return keys;
+}
+
+// 分批并行读取 KV 值，避免单次并发过多触发 Workers 限制
+async function readVisitValues(env, keys, chunk = 200) {
+  const values = [];
+  for (let i = 0; i < keys.length; i += chunk) {
+    const slice = keys.slice(i, i + chunk);
+    const vals = await Promise.all(slice.map(k => env.VISITS.get(k).catch(() => null)));
+    for (const v of vals) values.push(v);
+  }
+  return values;
+}
+
 async function handleStatsApi(env) {
   try {
-    const list = await env.VISITS.list({ prefix: 'v:', limit: 1000 });
+    const keys = await listAllVisitKeys(env);
     const ips = new Set();
     let total = 0;
-    // 并行读取，避免串行等待
-    const values = await Promise.all(list.keys.map(k => env.VISITS.get(k.name).catch(() => null)));
+    // 分批并行读取，避免串行等待
+    const values = await readVisitValues(env, keys);
     for (const v of values) {
       if (v) {
         total++;
@@ -427,8 +452,8 @@ async function handleStats(env, request) {
   // 只读取 v: 前缀的访问记录（跳过 geo/g/rl 键），并行 get 大幅提速
   const rows = [];
   try {
-    const list = await env.VISITS.list({ prefix: 'v:', limit: 800 });
-    const values = await Promise.all(list.keys.map(k => env.VISITS.get(k.name).catch(() => null)));
+    const keys = await listAllVisitKeys(env);
+    const values = await readVisitValues(env, keys);
     for (const v of values) {
       if (v) { try { rows.push(JSON.parse(v)); } catch (e) {} }
     }
