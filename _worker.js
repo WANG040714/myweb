@@ -485,12 +485,27 @@ async function listAllVisitKeys(env, pageSize = 1000) {
   return keys;
 }
 
-// 分批并行读取 KV 值，避免单次并发过多触发 Workers 限制
-async function readVisitValues(env, keys, chunk = 200) {
+// 分批并行读取 KV 值，避免单次并发过多触发超时；null 结果自动重试
+async function readVisitValues(env, keys, chunk = 50) {
   const values = [];
   for (let i = 0; i < keys.length; i += chunk) {
     const slice = keys.slice(i, i + chunk);
-    const vals = await Promise.all(slice.map(k => env.VISITS.get(k).catch(() => null)));
+    // 并发读取
+    let vals = await Promise.all(
+      slice.map(k => env.VISITS.get(k).catch(() => null))
+    );
+    // 对读取失败(null)的键重试，最多2次，降低瞬时超时/失败影响
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const missIdx = [];
+      for (let j = 0; j < vals.length; j++) {
+        if (vals[j] == null) missIdx.push(j);
+      }
+      if (missIdx.length === 0) break;
+      const retryVals = await Promise.all(
+        missIdx.map(j => env.VISITS.get(slice[j]).catch(() => null))
+      );
+      for (let m = 0; m < missIdx.length; m++) vals[missIdx[m]] = retryVals[m];
+    }
     for (const v of vals) values.push(v);
   }
   return values;
