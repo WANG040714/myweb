@@ -431,22 +431,18 @@ async function handleDiag(env) {
     }
     out.maxTsTime = out.maxTs ? new Date(out.maxTs).toISOString() : null;
 
-    // 值读取诊断：模拟 handleStats 的 readVisitValues，统计成功/失败
+    // 值读取诊断：调用真实的 readVisitValues（官方批量 get API），统计成功/失败
     const keys = await listAllVisitKeys(env);
     out.diagKeysAll = keys.length;
     let okValues = 0, nullFailed = 0, parseOk = 0, parseFail = 0;
     const nullKeys = [];
-    // 分批读取（与 readVisitValues 一致，chunk=200）
-    for (let i = 0; i < keys.length; i += 200) {
-      const slice = keys.slice(i, i + 200);
-      const vals = await Promise.all(slice.map(k => env.VISITS.get(k).catch(() => null)));
-      for (let j = 0; j < slice.length; j++) {
-        const v = vals[j];
-        if (v == null) { nullFailed++; if (nullKeys.length < 20) nullKeys.push(slice[j]); }
-        else {
-          okValues++;
-          try { JSON.parse(v); parseOk++; } catch (e) { parseFail++; }
-        }
+    const vals = await readVisitValues(env, keys);
+    for (let j = 0; j < vals.length; j++) {
+      const v = vals[j];
+      if (v == null) { nullFailed++; if (nullKeys.length < 20) nullKeys.push(keys[j]); }
+      else {
+        okValues++;
+        try { JSON.parse(v); parseOk++; } catch (e) { parseFail++; }
       }
     }
     out.read = {
@@ -485,28 +481,28 @@ async function listAllVisitKeys(env, pageSize = 1000) {
   return keys;
 }
 
-// 分批并行读取 KV 值，避免单次并发过多触发超时；null 结果自动重试
-async function readVisitValues(env, keys, chunk = 50) {
+// 分批读取 KV 值：使用官方批量 get(keys[]) API（最多100键/次，仅计1次 operation），
+// 避免逐个 get + Promise.all 高并发触发 KV 操作限制导致部分键静默 null
+async function readVisitValues(env, keys, chunk = 100) {
   const values = [];
   for (let i = 0; i < keys.length; i += chunk) {
     const slice = keys.slice(i, i + chunk);
-    // 并发读取
-    let vals = await Promise.all(
-      slice.map(k => env.VISITS.get(k).catch(() => null))
-    );
-    // 对读取失败(null)的键重试，最多2次，降低瞬时超时/失败影响
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const missIdx = [];
-      for (let j = 0; j < vals.length; j++) {
-        if (vals[j] == null) missIdx.push(j);
+    try {
+      // 官方批量读取：一次传数组，返回 Map<string, value|null>
+      const map = await env.VISITS.get(slice);
+      if (map && typeof map.get === 'function') {
+        for (const k of slice) values.push(map.get(k));
+      } else {
+        // 意外返回结构时回退
+        for (const k of slice) values.push(null);
       }
-      if (missIdx.length === 0) break;
-      const retryVals = await Promise.all(
-        missIdx.map(j => env.VISITS.get(slice[j]).catch(() => null))
+    } catch (e) {
+      // 批量接口异常时回退为逐个读取（降低并发，容忍个别失败）
+      const vals = await Promise.all(
+        slice.map(k => env.VISITS.get(k).catch(() => null))
       );
-      for (let m = 0; m < missIdx.length; m++) vals[missIdx[m]] = retryVals[m];
+      for (const v of vals) values.push(v);
     }
-    for (const v of vals) values.push(v);
   }
   return values;
 }
