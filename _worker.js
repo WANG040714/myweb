@@ -398,13 +398,20 @@ async function handleGuestbookPost(request, env) {
 async function listAllVisitKeys(env, pageSize = 1000) {
   const keys = [];
   let cursor;
-  do {
+  let guard = 0;
+  for (;;) {
     const opts = { prefix: 'v:', limit: pageSize };
     if (cursor) opts.cursor = cursor;
     const list = await env.VISITS.list(opts);
+    // 防御：没返回键则停止
+    if (!list.keys || list.keys.length === 0) break;
     for (const k of list.keys) keys.push(k.name);
-    cursor = list.list_complete ? undefined : list.cursor;
-  } while (cursor);
+    // 无游标则分页结束；游标未推进则终止防死循环
+    if (!list.cursor) break;
+    if (list.cursor === cursor) break;
+    cursor = list.cursor;
+    if (++guard > 50) break; // 极端防御
+  }
   return keys;
 }
 
