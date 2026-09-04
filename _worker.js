@@ -399,7 +399,7 @@ async function handleGuestbookPost(request, env) {
 
 // ---------- 访问统计 API ----------
 
-// [DEBUG] KV 分页诊断：逐页输出 list() 行为，用于定位分页失效根因
+// [DEBUG] KV 分页+取值诊断：逐页输出 list() 行为 + 值读取成功率，定位统计读取差异
 async function handleDiag(env) {
   const out = { pages: [], totalKeys: 0, maxTs: 0, maxTsTime: null };
   try {
@@ -408,9 +408,7 @@ async function handleDiag(env) {
     for (;;) {
       const opts = { prefix: 'v:', limit: 1000 };
       if (cursor) opts.cursor = cursor;
-      const t0 = Date.now();
       const list = await env.VISITS.list(opts);
-      const dt = Date.now() - t0;
       const names = (list.keys || []).map(k => k.name);
       let pageMaxTs = 0;
       for (const n of names) {
@@ -426,17 +424,40 @@ async function handleDiag(env) {
         cursor_prefix: list.cursor ? String(list.cursor).slice(0, 12) : null,
         pageMaxTs,
         pageMaxTime: pageMaxTs ? new Date(pageMaxTs).toISOString() : null,
-        ms: dt,
       });
       out.totalKeys += names.length;
-      if (!list.list_complete && list.cursor) {
-        cursor = list.cursor;
-        pageNo++;
-        continue;
-      }
+      if (!list.list_complete && list.cursor) { cursor = list.cursor; pageNo++; continue; }
       break;
     }
-    if (out.maxTs) out.maxTsTime = new Date(out.maxTs).toISOString();
+    out.maxTsTime = out.maxTs ? new Date(out.maxTs).toISOString() : null;
+
+    // 值读取诊断：模拟 handleStats 的 readVisitValues，统计成功/失败
+    const keys = await listAllVisitKeys(env);
+    out.diagKeysAll = keys.length;
+    let okValues = 0, nullFailed = 0, parseOk = 0, parseFail = 0;
+    const nullKeys = [];
+    // 分批读取（与 readVisitValues 一致，chunk=200）
+    for (let i = 0; i < keys.length; i += 200) {
+      const slice = keys.slice(i, i + 200);
+      const vals = await Promise.all(slice.map(k => env.VISITS.get(k).catch(() => null)));
+      for (let j = 0; j < slice.length; j++) {
+        const v = vals[j];
+        if (v == null) { nullFailed++; if (nullKeys.length < 20) nullKeys.push(slice[j]); }
+        else {
+          okValues++;
+          try { JSON.parse(v); parseOk++; } catch (e) { parseFail++; }
+        }
+      }
+    }
+    out.read = {
+      keysAll: keys.length,
+      valuesOk: okValues,
+      valuesNullFailed: nullFailed,
+      jsonParseOk: parseOk,
+      jsonParseFail: parseFail,
+      sampleNullKeys: nullKeys,
+    };
+
     return json({ ok: true, ...out });
   } catch (e) {
     return json({ ok: false, error: String(e && e.message || e), ...out }, 500);
