@@ -1,0 +1,69 @@
+name: Build 课程表 APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-apk.yml'
+      - 'apk/app-icon.png'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v4
+
+      - name: Checkout apk builder (Jipok/website-to-apk)
+        uses: actions/checkout@v4
+        with:
+          repository: Jipok/website-to-apk
+          path: builder
+
+      - name: Copy app icon
+        run: cp apk/app-icon.png builder/app-icon.png
+
+      - name: Write webapk.conf
+        run: |
+          cat > builder/webapk.conf <<'EOF'
+          id = wqqtimetable
+          name = 课程表
+          mainURL = https://xiaoquqi.dpdns.org/timetable
+          icon = app-icon.png
+          requireDoubleBackToExit = true
+          enableExternalLinks = true
+          openExternalLinksInBrowser = true
+          confirmOpenInBrowser = true
+          JSEnabled = true
+          DomStorageEnabled = true
+          EOF
+
+      - name: Generate signing key
+        run: |
+          cd builder
+          chmod +x make.sh
+          ./make.sh keygen
+
+      - name: Build APK
+        run: cd builder && ./make.sh build
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 课程表-apk
+          path: builder/*.apk
+          if-no-files-found: error
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk
+          name: 课程表 APK
+          body: |
+            📚 课程表 App（WebView 壳子）
+            打开即显示：https://xiaoquqi.dpdns.org/timetable
+            构建时间：${{ github.event.repository.updated_at }}
+          files: builder/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
