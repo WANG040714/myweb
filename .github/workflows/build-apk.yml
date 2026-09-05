@@ -46,7 +46,9 @@ jobs:
           echo y | ./make.sh keygen
 
       - name: Build APK
-        run: cd builder && ./make.sh build
+        run: |
+          unset ANDROID_HOME ANDROID_SDK_ROOT
+          cd builder && ./make.sh build
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
