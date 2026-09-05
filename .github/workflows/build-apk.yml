@@ -40,6 +40,7 @@ jobs:
           confirmOpenInBrowser = true
           JSEnabled = true
           DomStorageEnabled = true
+          edgeToEdge = true
           EOF
 
       - name: Patch status bar (沉浸式状态栏配色)
@@ -54,7 +55,7 @@ jobs:
           sed -i 's|#5C6BC0|#EAF2FB|' ../values-night/colors.xml
           sed -i 's|#121212|#EAF2FB|' ../values-night/colors.xml
           # 3) 窗口属性加到实际使用的 AppTheme.NoTitleBar（之前误加到未引用的 AppTheme）
-          sed -i 's|<item name="android:windowFullscreen">false</item>|<item name="android:windowFullscreen">false</item>\n        <item name="android:statusBarColor">@color/colorPrimaryDark</item>\n        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>\n        <item name="android:windowLightStatusBar">true</item>|' styles.xml
+          sed -i 's|<item name="android:windowFullscreen">false</item>|<item name="android:windowFullscreen">false</item>\n        <item name="android:statusBarColor">@color/colorPrimaryDark</item>\n        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>\n        <item name="android:windowLightStatusBar">true</item>\n        <item name="android:windowLightNavigationBar">true</item>|' styles.xml
           # 4) 强制浅色主题（去掉 DayNight，双保险）
           sed -i 's|Theme.AppCompat.DayNight.NoActionBar|Theme.AppCompat.Light.NoActionBar|' styles.xml
           echo "--- colors.xml ---" && cat colors.xml
