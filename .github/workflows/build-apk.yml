@@ -43,7 +43,7 @@ jobs:
         run: |
           cd builder
           chmod +x make.sh
-          ./make.sh keygen
+          echo y | ./make.sh keygen
 
       - name: Build APK
         run: cd builder && ./make.sh build
