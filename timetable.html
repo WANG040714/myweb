@@ -195,27 +195,36 @@
         background: rgba(255,255,255,0.6);
         border: 1px solid rgba(255,255,255,0.85);
         border-radius: var(--radius);
-        padding: 20px 22px;
+        padding: 12px 16px;
         box-shadow: var(--glass-shadow);
-        margin-bottom: 14px;
+        margin-bottom: 12px;
         display: flex;
-        gap: 18px;
-        align-items: flex-start;
+        gap: 16px;
+        align-items: center;
+        min-height: 80px;
         transition: transform 0.2s, box-shadow 0.2s;
     }
     .course-time {
         flex-shrink: 0;
-        min-width: 86px;
+        min-width: 94px;
         text-align: center;
         background: linear-gradient(135deg, rgba(122,184,236,0.4), rgba(74,144,217,0.3));
         border-radius: 12px;
-        padding: 12px 10px;
+        padding: 8px 12px;
         border: 1px solid rgba(255,255,255,0.6);
     }
-    .course-period { font-size: 14px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; }
-    .course-clock { font-size: 11px; color: var(--text-sec); margin-top: 3px; white-space: nowrap; }
-    .course-info { flex: 1; }
-    .course-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .course-period { font-size: 16px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; }
+    .course-clock { font-size: 12px; color: var(--text-sec); margin-top: 3px; white-space: nowrap; }
+    .course-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .course-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
     .course-meta { font-size: 13px; color: var(--text-sec); }
     .course-meta .dot { margin: 0 6px; color: var(--text-light); }
 
@@ -285,8 +294,9 @@
     @media (max-width: 820px) {
         .week-grid { grid-template-columns: repeat(2, 1fr); }
         h1 { font-size: 25px; }
-        .course-card { flex-direction: column; gap: 12px; }
-        .course-time { width: 100%; display: flex; justify-content: space-between; align-items: baseline; }
+        .course-card { flex-direction: column; gap: 8px; padding: 12px 14px; min-height: 0; }
+        .course-time { width: 100%; display: flex; justify-content: space-between; align-items: baseline; padding: 8px 12px; }
+        .course-meta .room { display: block; margin-top: 3px; }
     }
     @media (max-width: 460px) {
         .week-grid { grid-template-columns: 1fr; }
@@ -483,7 +493,7 @@ function renderDay() {
                 </div>
                 <div class="course-info">
                     <div class="course-name">${c.name}</div>
-                    <div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)} 周</span><span class="dot">·</span><span>学思5号楼505</span></div>
+                    <div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)} 周</span><span class="dot">·</span><span class="room">学思5号楼505</span></div>
                 </div>
             </div>`).join('');
 }
