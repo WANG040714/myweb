@@ -31,7 +31,8 @@
         -webkit-font-smoothing: antialiased;
         min-height: 100vh;
         background: linear-gradient(165deg, #eaf2fb 0%, #dcebf8 45%, #cfe3f4 100%);
-        padding-bottom: 60px;
+        padding-top: var(--safe-area-inset-top, 0px);
+        padding-bottom: max(var(--safe-area-inset-bottom, 0px), 60px);
     }
 
     /* 漂浮光斑 */
