@@ -42,6 +42,17 @@ jobs:
           DomStorageEnabled = true
           EOF
 
+      - name: Patch status bar (沉浸式状态栏配色)
+        run: |
+          cd builder/app/src/main/res/values
+          # 主色统一为网页主题蓝，状态栏/启动背景改为网页浅蓝，状态栏文字改深色
+          sed -i 's|#3F51B5|#4A90D9|' colors.xml
+          sed -i 's|#303F9F|#EAF2FB|' colors.xml
+          sed -i 's|#FFFFFF|#EAF2FB|' colors.xml
+          sed -i 's|<item name="android:windowBackground">@color/windowBackgroundColor</item>|<item name="android:windowBackground">@color/windowBackgroundColor</item>\n        <item name="android:statusBarColor">@color/colorPrimaryDark</item>\n        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>\n        <item name="android:windowLightStatusBar">true</item>|' styles.xml
+          echo "--- colors.xml ---" && cat colors.xml
+          echo "--- styles.xml ---" && cat styles.xml
+
       - name: Generate signing key
         run: |
           cd builder
