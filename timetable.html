@@ -195,26 +195,26 @@
         background: rgba(255,255,255,0.6);
         border: 1px solid rgba(255,255,255,0.85);
         border-radius: var(--radius);
-        padding: 12px 16px;
+        padding: 10px 14px;
         box-shadow: var(--glass-shadow);
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         display: flex;
-        gap: 16px;
+        gap: 14px;
         align-items: center;
-        min-height: 80px;
+        min-height: 68px;
         transition: transform 0.2s, box-shadow 0.2s;
     }
     .course-time {
         flex-shrink: 0;
-        min-width: 94px;
+        min-width: 90px;
         text-align: center;
         background: linear-gradient(135deg, rgba(122,184,236,0.4), rgba(74,144,217,0.3));
         border-radius: 12px;
-        padding: 8px 12px;
+        padding: 6px 10px;
         border: 1px solid rgba(255,255,255,0.6);
     }
-    .course-period { font-size: 16px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; }
-    .course-clock { font-size: 12px; color: var(--text-sec); margin-top: 3px; white-space: nowrap; }
+    .course-period { font-size: 16px; font-weight: 800; color: var(--primary-dark); white-space: nowrap; line-height: 1.35; }
+    .course-clock { font-size: 12px; color: var(--text-sec); margin-top: 2px; white-space: nowrap; line-height: 1.35; }
     .course-info {
         flex: 1;
         min-width: 0;
@@ -224,8 +224,8 @@
         align-items: center;
         text-align: center;
     }
-    .course-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-    .course-meta { font-size: 13px; color: var(--text-sec); }
+    .course-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 2px; line-height: 1.4; }
+    .course-meta { font-size: 13px; color: var(--text-sec); line-height: 1.45; }
     .course-meta .dot { margin: 0 6px; color: var(--text-light); }
 
     .empty-today {
@@ -493,7 +493,7 @@ function renderDay() {
                 </div>
                 <div class="course-info">
                     <div class="course-name">${c.name}</div>
-                    <div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)} 周</span><span class="dot">·</span><span class="room">学思5号楼505</span></div>
+                    <div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)} 周</span><span class="room"><span class="dot">·</span>学思5号楼505</span></div>
                 </div>
             </div>`).join('');
 }
