@@ -90,6 +90,7 @@
         -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     }
     .sub { font-size: 13px; color: var(--text-sec); }
+    .sub-sec { display: inline; }
 
     /* 今日信息卡片 */
     .today-card {
@@ -302,6 +303,7 @@
         .course-meta .room { display: block; margin-top: 3px; }
         .course-meta .dot { margin: 0 2px; }
         .course-info { margin-right: 0; }
+        .sub-sec { display: block; }
     }
     @media (max-width: 460px) {
         .week-grid { grid-template-columns: 1fr; }
@@ -324,7 +326,7 @@
 
         <header>
             <h1>我的课程表</h1>
-            <div class="sub">安徽科技工程大学 2026 级研究生 · 机械 · 2026-2027 学年第一学期</div>
+            <div class="sub">安徽科技工程大学 2026 级研究生 · 机械<span class="sub-sec"> · 2026-2027 学年第一学期</span></div>
         </header>
 
         <div class="today-card">
