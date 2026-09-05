@@ -142,6 +142,50 @@
         box-shadow: 0 6px 18px rgba(47,111,168,0.35);
     }
 
+    /* 日期切换导航 */
+    .day-nav-wrap {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .nav-arrow {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.55);
+        color: var(--primary-dark);
+        font-size: 26px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 20px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.2s;
+        font-family: inherit;
+        line-height: 1;
+        user-select: none;
+    }
+    .nav-arrow:hover { background: rgba(255,255,255,0.85); transform: scale(1.06); }
+    .nav-arrow:active { transform: scale(0.96); }
+    .nav-body { flex: 1; min-width: 0; }
+    .back-today {
+        font-size: 13px;
+        padding: 5px 14px;
+        border-radius: 980px;
+        border: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.6);
+        color: var(--primary-dark);
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+    }
+    .back-today:hover { background: rgba(255,255,255,0.85); }
+
     /* 今日课程 */
     .day-view { display: none; }
     .day-view.active { display: block; animation: fadeIn 0.3s ease; }
@@ -247,6 +291,8 @@
     @media (max-width: 460px) {
         .week-grid { grid-template-columns: 1fr; }
         .today-card { flex-direction: column; align-items: center; gap: 8px; }
+        .nav-arrow { width: 38px; height: 38px; font-size: 22px; margin-top: 16px; }
+        .day-nav-wrap { gap: 8px; }
     }
 </style>
 </head>
@@ -270,6 +316,7 @@
             <div class="today-date" id="todayDate"></div>
             <div class="today-week" id="todayWeek"></div>
             <span class="today-tag" id="todayTag"></span>
+            <button class="back-today" id="backToday" onclick="backToToday()" style="display:none">📍 回到今天</button>
         </div>
 
         <div class="tabs">
@@ -279,7 +326,11 @@
 
         <!-- 今日课程视图 -->
         <div class="day-view active" id="view-day">
-            <div id="todayCourses"></div>
+            <div class="day-nav-wrap">
+                <button class="nav-arrow" onclick="shiftDay(-1)" title="前一天" aria-label="前一天">‹</button>
+                <div class="nav-body" id="todayCourses"></div>
+                <button class="nav-arrow" onclick="shiftDay(1)" title="后一天" aria-label="后一天">›</button>
+            </div>
         </div>
 
         <!-- 整周课表视图 -->
@@ -378,34 +429,53 @@ function periodLabel(s, e) {
     return s === e ? `第${s}节` : `第${s}-${e}节`;
 }
 
-// ============ 今日课程 ============
-function renderToday() {
-    const now = new Date();
-    const weekNum = getWeekNumber(now);
-    const dayOfWeek = getTodayDayOfWeek(now);
+// ============ 日期切换 + 单日课程 ============
+let viewDate = new Date(); // 当前查看的日期（默认今天）
 
-    const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() &&
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
+}
+
+function shiftDay(delta) {
+    viewDate.setDate(viewDate.getDate() + delta);
+    renderDay();
+}
+
+function backToToday() {
+    viewDate = new Date();
+    renderDay();
+}
+
+function renderDay() {
+    const weekNum = getWeekNumber(viewDate);
+    const dayOfWeek = getTodayDayOfWeek(viewDate);
+    const isToday = isSameDay(viewDate, new Date());
+
+    const dateStr = `${viewDate.getFullYear()}年${viewDate.getMonth() + 1}月${viewDate.getDate()}日`;
     document.getElementById('todayDate').textContent = dateStr + ' ' + WEEK_NAMES[dayOfWeek - 1];
     document.getElementById('todayWeek').textContent = '第 ' + weekNum + ' 周';
-    document.getElementById('todayTag').textContent = '2026-2027 学年第一学期';
+    document.getElementById('todayTag').textContent = isToday ? '今天' : '2026-2027 学年第一学期';
+    document.getElementById('backToday').style.display = isToday ? 'none' : 'inline-block';
 
-    const todayCourses = COURSES
+    const dayCourses = COURSES
         .filter(c => c.day === dayOfWeek && c.weeks.includes(weekNum))
         .sort((a, b) => a.s - b.s);
 
     const container = document.getElementById('todayCourses');
 
-    if (todayCourses.length === 0) {
+    if (dayCourses.length === 0) {
         container.innerHTML = `
             <div class="empty-today">
                 <div class="emoji">🎉</div>
-                <div class="msg">今天没有课</div>
-                <div class="sub2">好好休息，或者自习一下 ~</div>
+                <div class="msg">${isToday ? '今天没有课' : '这天没有课'}</div>
+                <div class="sub2">${isToday ? '好好休息，或者自习一下 ~' : '放松一下，做点别的 ~'}</div>
             </div>`;
         return;
     }
 
-    container.innerHTML = todayCourses.map(c => `
+    container.innerHTML = dayCourses.map(c => `
             <div class="course-card">
                 <div class="course-time">
                     <div class="course-period">${periodLabel(c.s, c.e)}</div>
@@ -462,7 +532,7 @@ function switchTab(name) {
 }
 
 // ============ 初始化 ============
-renderToday();
+renderDay();
 renderWeek();
 </script>
 </body>
