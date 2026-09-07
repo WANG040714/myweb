@@ -297,10 +297,21 @@ export default {
 // 查询 IP 城市信息（带 KV 缓存，避免每次访问都打第三方接口）
 async function getGeo(env, ip) {
   if (!ip || ip === '-') return null;
+  // 方案4: 优先从 D1 读取 (100万行/天免费，远超 KV 的 10万次/天)
+  try {
+    if (env.GEO_DB) {
+      const row = await env.GEO_DB.prepare(
+        'SELECT city, region, isp FROM geo_cache WHERE ip = ?'
+      ).bind(ip).first();
+      if (row) return { city: row.city, region: row.region, isp: row.isp };
+    }
+  } catch (e) {}
+  // 回退: KV 缓存读取
   try {
     const cached = await env.VISITS.get('geo:' + ip, { cacheTtl: 86400 });
     if (cached) return JSON.parse(cached);
   } catch (e) {}
+  // 兜底: 调用 ip-api.com
   try {
     const resp = await fetch(
       'http://ip-api.com/json/' + encodeURIComponent(ip) + '?fields=status,country,regionName,city,isp,query&lang=zh-CN',
@@ -309,7 +320,15 @@ async function getGeo(env, ip) {
     const data = await resp.json();
     if (data && data.status === 'success') {
       const geo = { city: data.city || null, region: data.regionName || null, isp: data.isp || null };
-      // 缓存 30 天
+      // 写入 D1 (主缓存)
+      try {
+        if (env.GEO_DB) {
+          await env.GEO_DB.prepare(
+            'INSERT OR REPLACE INTO geo_cache (ip, city, region, isp) VALUES (?, ?, ?, ?)'
+          ).bind(ip, geo.city, geo.region, geo.isp).run();
+        }
+      } catch (e) {}
+      // 同时写入 KV (备用)
       await env.VISITS.put('geo:' + ip, JSON.stringify(geo), { expirationTtl: 2592000 }).catch(() => {});
       return geo;
     }
