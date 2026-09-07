@@ -306,10 +306,19 @@ async function getGeo(env, ip) {
       if (row) return { city: row.city, region: row.region, isp: row.isp };
     }
   } catch (e) {}
-  // 回退: KV 缓存读取
+  // 回退: KV 缓存读取 → 自动同步到 D1
   try {
     const cached = await env.VISITS.get('geo:' + ip, { cacheTtl: 86400 });
-    if (cached) return JSON.parse(cached);
+    if (cached) {
+      const geo = JSON.parse(cached);
+      // 异步同步到 D1（不阻塞返回）
+      if (env.GEO_DB) {
+        env.GEO_DB.prepare(
+          'INSERT OR REPLACE INTO geo_cache (ip, city, region, isp) VALUES (?, ?, ?, ?)'
+        ).bind(ip, geo.city || '', geo.region || '', geo.isp || '').run().catch(() => {});
+      }
+      return geo;
+    }
   } catch (e) {}
   // 兜底: 调用 ip-api.com
   try {
