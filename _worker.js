@@ -471,6 +471,25 @@ async function handleStats(env, request) {
     if (cached) return cached;
   } catch (e) { /* 缓存不可用则继续实时计算 */ }
 
+  // [降KV用量] KV 快照缓存：命中且未过期(10分钟)则直接返回，
+  // 避免每次统计页都全量扫 v: 键（读操作从 1800+ 降到 ~1）
+  try {
+    const snapRaw = await env.VISITS.get('stats:snapshot');
+    if (snapRaw) {
+      const snap = JSON.parse(snapRaw);
+      if (snap && snap.html && Date.now() - snap.ts < 10 * 60 * 1000) {
+        const r = new Response(snap.html, {
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, max-age=300',
+          },
+        });
+        try { await cache.put(cacheKey, r.clone()); } catch (e2) {}
+        return r;
+      }
+    }
+  } catch (e) { /* 快照不可用则全量重算 */ }
+
   // 只读取 v: 前缀的访问记录（跳过 geo/g/rl 键），并行 get 大幅提速
   const rows = [];
   try {
@@ -740,6 +759,12 @@ async function handleStats(env, request) {
   // 写入 Cache API（5 分钟内同一 URL 直接命中缓存，首次加载也接近静态速度）
   try {
     await cache.put(cacheKey, resp.clone());
+  } catch (e) {}
+  // [降KV用量] 写入 KV 快照（TTL 10 分钟），供后续请求直接读取，避免全量扫 KV
+  try {
+    await env.VISITS.put('stats:snapshot', JSON.stringify({ ts: Date.now(), html }), {
+      expirationTtl: 600,
+    });
   } catch (e) {}
   return resp;
 }
