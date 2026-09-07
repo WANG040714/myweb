@@ -298,7 +298,7 @@ export default {
 async function getGeo(env, ip) {
   if (!ip || ip === '-') return null;
   try {
-    const cached = await env.VISITS.get('geo:' + ip);
+    const cached = await env.VISITS.get('geo:' + ip, { cacheTtl: 86400 });
     if (cached) return JSON.parse(cached);
   } catch (e) {}
   try {
@@ -347,18 +347,27 @@ async function recordVisit(request, env, url) {
 
 // 读取最近 100 条留言（倒序）
 async function handleGuestbookGet(env) {
+  const cache = caches.default;
+  const cacheKey = new Request('https://xiaoquqi.dpdns.org/api/guestbook', { method: 'GET' });
+  try {
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+  } catch (e) {}
+
   const msgs = [];
   try {
     const list = await env.VISITS.list({ prefix: 'g:', limit: 200 });
     for (const k of list.keys) {
-      const v = await env.VISITS.get(k.name);
+      const v = await env.VISITS.get(k.name, { cacheTtl: 60 });
       if (v) msgs.push(JSON.parse(v));
     }
   } catch (e) {
     return json({ ok: false, error: '读取留言失败' }, 500);
   }
   msgs.sort((a, b) => b.t - a.t);
-  return json({ ok: true, messages: msgs.slice(0, 100) });
+  const resp = json({ ok: true, messages: msgs.slice(0, 100) });
+  try { await cache.put(cacheKey, resp.clone()); } catch (e2) {}
+  return resp;
 }
 
 // 提交留言（带简单限流：每 IP 每 60 秒最多 1 条）
@@ -379,7 +388,7 @@ async function handleGuestbookPost(request, env) {
 
   // IP 限流：60 秒内同 IP 最多 1 条
   const rateKey = 'rl:' + ip;
-  const last = await env.VISITS.get(rateKey);
+  const last = await env.VISITS.get(rateKey, { cacheTtl: 120 });
   const now = Date.now();
   if (last && now - parseInt(last, 10) < 60000) {
     const waitSec = Math.ceil((60000 - (now - parseInt(last, 10))) / 1000);
@@ -433,7 +442,7 @@ async function readVisitValues(env, keys, chunk = 100) {
     } catch (e) {
       // 批量接口异常时回退为逐个读取（降低并发，容忍个别失败）
       const vals = await Promise.all(
-        slice.map(k => env.VISITS.get(k).catch(() => null))
+        slice.map(k => env.VISITS.get(k, { cacheTtl: 60 }).catch(() => null))
       );
       for (const v of vals) values.push(v);
     }
@@ -442,11 +451,17 @@ async function readVisitValues(env, keys, chunk = 100) {
 }
 
 async function handleStatsApi(env) {
+  const cache = caches.default;
+  const cacheKey = new Request('https://xiaoquqi.dpdns.org/api/stats', { method: 'GET' });
+  try {
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+  } catch (e) {}
+
   try {
     const keys = await listAllVisitKeys(env);
     const ips = new Set();
     let total = 0;
-    // 分批并行读取，避免串行等待
     const values = await readVisitValues(env, keys);
     for (const v of values) {
       if (v) {
@@ -454,7 +469,9 @@ async function handleStatsApi(env) {
         try { ips.add(JSON.parse(v).ip); } catch (e) {}
       }
     }
-    return json({ ok: true, total, uniqIps: ips.size });
+    const resp = json({ ok: true, total, uniqIps: ips.size });
+    try { await cache.put(cacheKey, resp.clone()); } catch (e2) {}
+    return resp;
   } catch (e) {
     return json({ ok: false, error: '统计失败' }, 500);
   }
@@ -474,7 +491,7 @@ async function handleStats(env, request) {
   // [降KV用量] KV 快照缓存：命中且未过期(10分钟)则直接返回，
   // 避免每次统计页都全量扫 v: 键（读操作从 1800+ 降到 ~1）
   try {
-    const snapRaw = await env.VISITS.get('stats:snapshot');
+    const snapRaw = await env.VISITS.get('stats:snapshot', { cacheTtl: 300 });
     if (snapRaw) {
       const snap = JSON.parse(snapRaw);
       if (snap && snap.html && Date.now() - snap.ts < 10 * 60 * 1000) {
@@ -777,3 +794,5 @@ function json(data, status = 200) {
     headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
   });
 }
+
+
