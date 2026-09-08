@@ -1,1 +1,92 @@
-name: Build 课程表 APKon:  workflow_dispatch:  push:    paths:      - '.github/workflows/build-apk.yml'      - 'apk/app-icon.png'permissions:  contents: writejobs:  build-apk:    runs-on: ubuntu-latest    timeout-minutes: 30    steps:      - name: Checkout website repo        uses: actions/checkout@v4      - name: Checkout apk builder (Jipok/website-to-apk)        uses: actions/checkout@v4        with:          repository: Jipok/website-to-apk          path: builder      - name: Copy app icon        run: cp apk/app-icon.png builder/app-icon.png      - name: Write webapk.conf        run: |          cat > builder/webapk.conf <<'EOF'          id = wqqtimetable          name = 课程表          mainURL = https://xiaoquqi.dpdns.org/timetable          icon = app-icon.png          requireDoubleBackToExit = true          enableExternalLinks = true          openExternalLinksInBrowser = true          confirmOpenInBrowser = true          JSEnabled = true          DomStorageEnabled = true          edgeToEdge = true          DatabaseEnabled = true          cacheMode = cache_only          fadeInDuration = 0          EOF      - name: Patch status bar (沉浸式状态栏配色)        run: |          cd builder/app/src/main/res/values          # 1) 浅色模式资源：主色/状态栏/启动背景统一为网页配色          sed -i 's|#3F51B5|#4A90D9|' colors.xml          sed -i 's|#303F9F|#EAF2FB|' colors.xml          sed -i 's|#FFFFFF|#EAF2FB|' colors.xml          # 2) 深色模式资源也强制浅色（避免 DayNight 深色变体把状态栏变暗）          sed -i 's|#7986CB|#4A90D9|' ../values-night/colors.xml          sed -i 's|#5C6BC0|#EAF2FB|' ../values-night/colors.xml          sed -i 's|#121212|#EAF2FB|' ../values-night/colors.xml          # 3) 窗口属性加到实际使用的 AppTheme.NoTitleBar（之前误加到未引用的 AppTheme）          sed -i 's|<item name="android:windowFullscreen">false</item>|<item name="android:windowFullscreen">false</item>\n        <item name="android:statusBarColor">@color/colorPrimaryDark</item>\n        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>\n        <item name="android:windowLightStatusBar">true</item>\n        <item name="android:windowLightNavigationBar">true</item>|' styles.xml          # 4) 强制浅色主题（去掉 DayNight，双保险）          sed -i 's|Theme.AppCompat.DayNight.NoActionBar|Theme.AppCompat.Light.NoActionBar|' styles.xml          echo "--- colors.xml ---" && cat colors.xml          echo "--- night colors.xml ---" && cat ../values-night/colors.xml          echo "--- styles.xml ---" && cat styles.xml      - name: Generate signing key        run: |          cd builder          chmod +x make.sh          echo y | ./make.sh keygen      - name: Build APK        run: |          unset ANDROID_HOME ANDROID_SDK_ROOT          cd builder && ./make.sh build      - name: Upload APK artifact        uses: actions/upload-artifact@v4        with:          name: 课程表-apk          path: builder/*.apk          if-no-files-found: error      - name: Create Release        uses: softprops/action-gh-release@v2        with:          tag_name: apk          name: 课程表 APK          body: |            📚 课程表 App（WebView 壳子）            打开即显示：https://xiaoquqi.dpdns.org/timetable            构建时间：${{ github.event.repository.updated_at }}          files: builder/*.apk        env:          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+name: Build 课程表 APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-apk.yml'
+      - 'apk/app-icon.png'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v4
+
+      - name: Checkout apk builder (Jipok/website-to-apk)
+        uses: actions/checkout@v4
+        with:
+          repository: Jipok/website-to-apk
+          path: builder
+
+      - name: Copy app icon
+        run: cp apk/app-icon.png builder/app-icon.png
+
+      - name: Write webapk.conf
+        run: |
+          cat > builder/webapk.conf <<'EOF'
+          id = wqqtimetable
+          name = 课程表
+          mainURL = https://xiaoquqi.dpdns.org/timetable
+          icon = app-icon.png
+          requireDoubleBackToExit = true
+          enableExternalLinks = true
+          openExternalLinksInBrowser = true
+          confirmOpenInBrowser = true
+          JSEnabled = true
+          DomStorageEnabled = true
+          DatabaseEnabled = true
+          edgeToEdge = true
+          cacheMode = cache_only
+          fadeInDuration = 0
+          EOF
+
+      - name: Patch status bar
+        run: |
+          cd builder/app/src/main/res/values
+          sed -i 's|#3F51B5|#4A90D9|' colors.xml
+          sed -i 's|#303F9F|#EAF2FB|' colors.xml
+          sed -i 's|#FFFFFF|#EAF2FB|' colors.xml
+          sed -i 's|#7986CB|#4A90D9|' ../values-night/colors.xml
+          sed -i 's|#5C6BC0|#EAF2FB|' ../values-night/colors.xml
+          sed -i 's|#121212|#EAF2FB|' ../values-night/colors.xml
+          sed -i 's|<item name="android:windowFullscreen">false</item>|<item name="android:windowFullscreen">false</item>\n        <item name="android:statusBarColor">@color/colorPrimaryDark</item>\n        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>\n        <item name="android:windowLightStatusBar">true</item>\n        <item name="android:windowLightNavigationBar">true</item>|' styles.xml
+          sed -i 's|Theme.AppCompat.DayNight.NoActionBar|Theme.AppCompat.Light.NoActionBar|' styles.xml
+          echo "--- colors.xml ---" && cat colors.xml
+          echo "--- night colors.xml ---" && cat ../values-night/colors.xml
+          echo "--- styles.xml ---" && cat styles.xml
+
+      - name: Generate signing key
+        run: |
+          cd builder
+          chmod +x make.sh
+          echo y | ./make.sh keygen
+
+      - name: Build APK
+        run: |
+          unset ANDROID_HOME ANDROID_SDK_ROOT
+          cd builder && ./make.sh build
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 课程表-apk
+          path: builder/*.apk
+          if-no-files-found: error
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk
+          name: 课程表 APK
+          body: |
+            📚 课程表 App（WebView 壳子）
+            打开即显示：https://xiaoquqi.dpdns.org/timetable
+          files: builder/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
