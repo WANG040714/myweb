@@ -1,4 +1,4 @@
-// Cloudflare Pages _worker.js —— WQQ 网站访问记录 + 安全防护 + 留言板 API + 设备识别
+﻿// Cloudflare Pages _worker.js —— WQQ 网站访问记录 + 安全防护 + 留言板 API + 设备识别
 // 功能：
 // 1. 安全防护：拦截漏洞路径扫描（wp-includes/xmlrpc.php 等）和已知恶意爬虫
 // 2. 每次访问记录真实 IP + 时间 + 页面 + 浏览器 + 城市/运营商 + 设备型号到 KV
@@ -288,7 +288,13 @@ export default {
     }
 
     // 正常返回静态页面
-    return env.ASSETS.fetch(request);
+        // 静态页面加缓存头：CDN 缓存 5 分钟，浏览器缓存 1 小时
+    const assetResp = await env.ASSETS.fetch(request);
+    const newHeaders = new Headers(assetResp.headers);
+    if (url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/')) {
+      newHeaders.set('Cache-Control', 'public, max-age=3600, s-maxage=300');
+    }
+    return new Response(assetResp.body, { status: assetResp.status, headers: newHeaders });
   },
 };
 
@@ -297,30 +303,10 @@ export default {
 // 查询 IP 城市信息（带 KV 缓存，避免每次访问都打第三方接口）
 async function getGeo(env, ip) {
   if (!ip || ip === '-') return null;
-  // 方案4: 优先从 D1 读取 (100万行/天免费，远超 KV 的 10万次/天)
   try {
-    if (env.GEO_DB) {
-      const row = await env.GEO_DB.prepare(
-        'SELECT city, region, isp FROM geo_cache WHERE ip = ?'
-      ).bind(ip).first();
-      if (row) return { city: row.city, region: row.region, isp: row.isp };
-    }
+    const cached = await env.VISITS.get('geo:' + ip);
+    if (cached) return JSON.parse(cached);
   } catch (e) {}
-  // 回退: KV 缓存读取 → 自动同步到 D1
-  try {
-    const cached = await env.VISITS.get('geo:' + ip, { cacheTtl: 86400 });
-    if (cached) {
-      const geo = JSON.parse(cached);
-      // 异步同步到 D1（不阻塞返回）
-      if (env.GEO_DB) {
-        env.GEO_DB.prepare(
-          'INSERT OR REPLACE INTO geo_cache (ip, city, region, isp) VALUES (?, ?, ?, ?)'
-        ).bind(ip, geo.city || '', geo.region || '', geo.isp || '').run().catch(() => {});
-      }
-      return geo;
-    }
-  } catch (e) {}
-  // 兜底: 调用 ip-api.com
   try {
     const resp = await fetch(
       'http://ip-api.com/json/' + encodeURIComponent(ip) + '?fields=status,country,regionName,city,isp,query&lang=zh-CN',
@@ -329,15 +315,7 @@ async function getGeo(env, ip) {
     const data = await resp.json();
     if (data && data.status === 'success') {
       const geo = { city: data.city || null, region: data.regionName || null, isp: data.isp || null };
-      // 写入 D1 (主缓存)
-      try {
-        if (env.GEO_DB) {
-          await env.GEO_DB.prepare(
-            'INSERT OR REPLACE INTO geo_cache (ip, city, region, isp) VALUES (?, ?, ?, ?)'
-          ).bind(ip, geo.city, geo.region, geo.isp).run();
-        }
-      } catch (e) {}
-      // 同时写入 KV (备用)
+      // 缓存 30 天
       await env.VISITS.put('geo:' + ip, JSON.stringify(geo), { expirationTtl: 2592000 }).catch(() => {});
       return geo;
     }
@@ -375,27 +353,18 @@ async function recordVisit(request, env, url) {
 
 // 读取最近 100 条留言（倒序）
 async function handleGuestbookGet(env) {
-  const cache = caches.default;
-  const cacheKey = new Request('https://xiaoquqi.dpdns.org/api/guestbook', { method: 'GET' });
-  try {
-    const cached = await cache.match(cacheKey);
-    if (cached) return cached;
-  } catch (e) {}
-
   const msgs = [];
   try {
     const list = await env.VISITS.list({ prefix: 'g:', limit: 200 });
     for (const k of list.keys) {
-      const v = await env.VISITS.get(k.name, { cacheTtl: 60 });
+      const v = await env.VISITS.get(k.name);
       if (v) msgs.push(JSON.parse(v));
     }
   } catch (e) {
     return json({ ok: false, error: '读取留言失败' }, 500);
   }
   msgs.sort((a, b) => b.t - a.t);
-  const resp = json({ ok: true, messages: msgs.slice(0, 100) });
-  try { await cache.put(cacheKey, resp.clone()); } catch (e2) {}
-  return resp;
+  return json({ ok: true, messages: msgs.slice(0, 100) });
 }
 
 // 提交留言（带简单限流：每 IP 每 60 秒最多 1 条）
@@ -416,7 +385,7 @@ async function handleGuestbookPost(request, env) {
 
   // IP 限流：60 秒内同 IP 最多 1 条
   const rateKey = 'rl:' + ip;
-  const last = await env.VISITS.get(rateKey, { cacheTtl: 120 });
+  const last = await env.VISITS.get(rateKey);
   const now = Date.now();
   if (last && now - parseInt(last, 10) < 60000) {
     const waitSec = Math.ceil((60000 - (now - parseInt(last, 10))) / 1000);
@@ -470,7 +439,7 @@ async function readVisitValues(env, keys, chunk = 100) {
     } catch (e) {
       // 批量接口异常时回退为逐个读取（降低并发，容忍个别失败）
       const vals = await Promise.all(
-        slice.map(k => env.VISITS.get(k, { cacheTtl: 60 }).catch(() => null))
+        slice.map(k => env.VISITS.get(k).catch(() => null))
       );
       for (const v of vals) values.push(v);
     }
@@ -479,17 +448,11 @@ async function readVisitValues(env, keys, chunk = 100) {
 }
 
 async function handleStatsApi(env) {
-  const cache = caches.default;
-  const cacheKey = new Request('https://xiaoquqi.dpdns.org/api/stats', { method: 'GET' });
-  try {
-    const cached = await cache.match(cacheKey);
-    if (cached) return cached;
-  } catch (e) {}
-
   try {
     const keys = await listAllVisitKeys(env);
     const ips = new Set();
     let total = 0;
+    // 分批并行读取，避免串行等待
     const values = await readVisitValues(env, keys);
     for (const v of values) {
       if (v) {
@@ -497,9 +460,7 @@ async function handleStatsApi(env) {
         try { ips.add(JSON.parse(v).ip); } catch (e) {}
       }
     }
-    const resp = json({ ok: true, total, uniqIps: ips.size });
-    try { await cache.put(cacheKey, resp.clone()); } catch (e2) {}
-    return resp;
+    return json({ ok: true, total, uniqIps: ips.size });
   } catch (e) {
     return json({ ok: false, error: '统计失败' }, 500);
   }
@@ -515,25 +476,6 @@ async function handleStats(env, request) {
     const cached = await cache.match(cacheKey);
     if (cached) return cached;
   } catch (e) { /* 缓存不可用则继续实时计算 */ }
-
-  // [降KV用量] KV 快照缓存：命中且未过期(10分钟)则直接返回，
-  // 避免每次统计页都全量扫 v: 键（读操作从 1800+ 降到 ~1）
-  try {
-    const snapRaw = await env.VISITS.get('stats:snapshot', { cacheTtl: 300 });
-    if (snapRaw) {
-      const snap = JSON.parse(snapRaw);
-      if (snap && snap.html && Date.now() - snap.ts < 10 * 60 * 1000) {
-        const r = new Response(snap.html, {
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'public, max-age=300',
-          },
-        });
-        try { await cache.put(cacheKey, r.clone()); } catch (e2) {}
-        return r;
-      }
-    }
-  } catch (e) { /* 快照不可用则全量重算 */ }
 
   // 只读取 v: 前缀的访问记录（跳过 geo/g/rl 键），并行 get 大幅提速
   const rows = [];
@@ -805,12 +747,6 @@ async function handleStats(env, request) {
   try {
     await cache.put(cacheKey, resp.clone());
   } catch (e) {}
-  // [降KV用量] 写入 KV 快照（TTL 10 分钟），供后续请求直接读取，避免全量扫 KV
-  try {
-    await env.VISITS.put('stats:snapshot', JSON.stringify({ ts: Date.now(), html }), {
-      expirationTtl: 600,
-    });
-  } catch (e) {}
   return resp;
 }
 
@@ -822,5 +758,3 @@ function json(data, status = 200) {
     headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
   });
 }
-
-
