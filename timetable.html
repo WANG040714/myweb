@@ -1,6 +1,9 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<meta http-equiv="x-dns-prefetch-control" content="on">
+<link rel="preconnect" href="https://xiaoquqi.dpdns.org">
+<link rel="dns-prefetch" href="https://xiaoquqi.dpdns.org">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="WQQ 的课程表 - 每天打开查看今日课程">
@@ -683,6 +686,14 @@ function closePopup(e) {
     if (e && e.target !== e.currentTarget) return;
     document.getElementById('classPopup').classList.remove('show');
 }
+
+// ============ Service Worker 离线缓存 ============
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
+
+</html>
+
 </body>
 </html>
