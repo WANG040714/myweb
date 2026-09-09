@@ -1,1 +1,609 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="x-dns-prefetch-control" content="on"><link rel="preconnect" href="https://xiaoquqi.dpdns.org"><link rel="dns-prefetch" href="https://xiaoquqi.dpdns.org"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="WQQ 的课程表 - 每天打开查看今日课程"><title>课程表 · WQQ</title><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"><style> *{margin:0;padding:0;box-sizing:border-box}:root{--primary:#4A90D9;--primary-light:#7AB8EC;--primary-dark:#2F6FA8;--accent:#A8D4F5;--text:#17324F;--text-sec:#3D5A75;--text-light:#7A93AC;--glass-border:rgba(255,255,255,0.55);--glass-shadow:0 8px 32px rgba(60,110,170,0.18);--glass-shadow-lg:0 16px 48px rgba(60,110,170,0.25);--radius:18px;--radius-lg:26px}body{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;background:linear-gradient(165deg, #eaf2fb 0%, #dcebf8 45%, #cfe3f4 100%);padding-top:var(--safe-area-inset-top, 0px);padding-bottom:max(var(--safe-area-inset-bottom, 0px), 60px)}.blob{position:fixed;z-index:-1;border-radius:50%;filter:blur(60px);opacity:0.4;pointer-events:none}.blob-1{width:380px;height:380px;background:rgba(140,190,255,0.55);top:-80px;left:-60px}.blob-2{width:300px;height:300px;background:rgba(190,225,255,0.6);bottom:8%;right:-60px}.blob-3{width:260px;height:260px;background:rgba(120,170,235,0.4);top:45%;left:60%}.wrap{max-width:980px;margin:0 auto;padding:30px 20px 0}.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}.brand{font-size:20px;font-weight:800;color:var(--primary-dark);text-decoration:none;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px}.back-home{font-size:13px;color:var(--primary-dark);text-decoration:none;font-weight:600;padding:8px 16px;border-radius:980px;background:rgba(255,255,255,0.5);border:1px solid var(--glass-border);transition:all 0.2s}.back-home:hover{background:rgba(255,255,255,0.75)}header{text-align:center;margin-bottom:28px}h1{font-size:30px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;background:linear-gradient(120deg, var(--primary-dark), var(--primary) 55%, var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}.sub{font-size:13px;color:var(--text-sec)}.sub-sec{display:inline}.today-card{background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.85);border-radius:var(--radius-lg);padding:26px 28px;box-shadow:var(--glass-shadow);margin-bottom:22px;display:flex;flex-wrap:wrap;align-items:baseline;gap:18px;justify-content:center}.today-date{font-size:22px;font-weight:800;color:var(--text)}.today-week{font-size:15px;font-weight:600;color:var(--primary-dark)}.today-tag{font-size:13px;padding:4px 14px;border-radius:980px;background:rgba(74,144,217,0.14);color:var(--primary-dark);font-weight:600}.tabs{display:flex;gap:10px;justify-content:center;margin-bottom:22px}.tab{padding:9px 22px;border-radius:980px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--glass-border);background:rgba(255,255,255,0.4);color:var(--text-sec);transition:all 0.2s;font-family:inherit}.tab.active{background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:#FFF;border-color:transparent;box-shadow:0 6px 18px rgba(47,111,168,0.35)}.day-nav-wrap{display:flex;align-items:flex-start;gap:14px;justify-content:center}.nav-arrow{flex-shrink:0;width:48px;height:48px;border-radius:50%;border:1px solid var(--glass-border);background:rgba(255,255,255,0.55);color:var(--primary-dark);font-size:26px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:20px;box-shadow:var(--glass-shadow);transition:all 0.2s;font-family:inherit;line-height:1;user-select:none}.nav-arrow:hover{background:rgba(255,255,255,0.85);transform:scale(1.06)}.nav-arrow:active{transform:scale(0.96)}.nav-body{flex:1;min-width:0;max-width:620px}.back-today{font-size:13px;padding:5px 14px;border-radius:980px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.6);color:var(--primary-dark);font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s}.back-today:hover{background:rgba(255,255,255,0.85)}.day-view{display:none}.day-view.active{display:block;animation:fadeIn 0.3s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.course-card{background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.85);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--glass-shadow);margin-bottom:12px;display:flex;gap:10px;align-items:center;min-height:80px;transition:transform 0.2s, box-shadow 0.2s}.course-time{flex-shrink:0;min-width:92px;margin-left:40px;text-align:center;background:linear-gradient(135deg, rgba(122,184,236,0.4), rgba(74,144,217,0.3));border-radius:12px;padding:10px 12px;border:1px solid rgba(255,255,255,0.6)}.course-period{font-size:16px;font-weight:800;color:var(--primary-dark);white-space:nowrap;line-height:1.35}.course-clock{font-size:12px;color:var(--text-sec);margin-top:2px;white-space:nowrap;line-height:1.35}.course-info{flex:1;min-width:0;margin-right:30px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}.course-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.4}.course-meta{font-size:13px;color:var(--text-sec);line-height:1.45}.course-meta .dot{margin:0 6px;color:var(--text-light)}.empty-today{text-align:center;padding:60px 20px;background:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.85);border-radius:var(--radius-lg);box-shadow:var(--glass-shadow)}.empty-today .emoji{font-size:52px;margin-bottom:12px}.empty-today .msg{font-size:18px;font-weight:700;color:var(--text)}.empty-today .sub2{font-size:13px;color:var(--text-sec);margin-top:6px}.week-view{display:none}.week-view.active{display:block;animation:fadeIn 0.3s ease}.week-grid{display:grid;grid-template-columns:repeat(7, 1fr);gap:10px}.day-col{background:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.85);border-radius:14px;padding:12px 10px;box-shadow:var(--glass-shadow)}.day-col.today{border:2px solid var(--primary);background:rgba(255,255,255,0.7)}.day-col-head{text-align:center;font-weight:700;font-size:13px;color:var(--primary-dark);padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.6)}.day-col.today .day-col-head{color:var(--primary-dark)}.week-course{font-size:12px;color:var(--text-sec);padding:7px 8px;margin-bottom:7px;background:rgba(74,144,217,0.08);border-radius:8px;border-left:3px solid var(--primary-light);line-height:1.5}.week-course .wc-name{font-weight:700;color:var(--text);font-size:12.5px}.week-course .wc-meta{font-size:11px;color:var(--text-light);margin-top:2px}.week-note{text-align:center;font-size:12px;color:var(--text-light);margin-top:18px}footer{text-align:center;margin-top:36px;color:var(--text-sec);font-size:12px}footer a{color:var(--primary-dark);text-decoration:none;font-weight:600}@media (max-width:820px){body{padding-top:max(var(--safe-area-inset-top, 0px), 28px)}.wrap{padding-top:14px}.topbar{margin-bottom:12px}.brand{font-size:17px}.back-home{padding:6px 12px;font-size:12px}header{margin-bottom:12px}h1{font-size:22px;margin-bottom:4px}.today-card{padding:12px 16px;margin-bottom:12px}.today-date{font-size:18px}.today-week{font-size:13px}.tabs{margin-bottom:12px}.tab{padding:7px 18px;font-size:13px}.week-grid{grid-template-columns:repeat(2, 1fr)}.course-card{flex-direction:column;gap:8px;padding:14px 16px;min-height:0}.course-time{width:100%;display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;margin-left:0}.course-meta .room{display:block;margin-top:3px}.course-meta .dot{margin:0 2px}.course-info{margin-right:0}.sub-sec{display:block}}@media (max-width:460px){.week-grid{grid-template-columns:1fr}.today-card{flex-direction:column;align-items:center;gap:6px}.nav-arrow{width:38px;height:38px;font-size:22px;margin-top:16px}.day-nav-wrap{gap:8px}}.popup-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);justify-content:center;align-items:center;padding:24px;animation:popupFadeIn 0.3s ease}.popup-overlay.show{display:flex}@keyframes popupFadeIn{from{opacity:0}to{opacity:1}}.popup-box{background:rgba(255,255,255,0.92);border:1px solid rgba(255,255,255,0.9);border-radius:22px;padding:32px 28px 24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(50,100,170,0.3);text-align:center;animation:popupSlideUp 0.35s ease}@keyframes popupSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.popup-emoji{font-size:48px;margin-bottom:12px}.popup-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.5}.popup-sub{font-size:14px;color:var(--text-sec);margin-bottom:20px;line-height:1.6}.popup-btn{display:inline-block;padding:10px 36px;border-radius:980px;border:none;background:linear-gradient(135deg, var(--primary), var(--primary-dark));color:#FFF;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(47,111,168,0.35);transition:transform 0.15s;font-family:inherit}.popup-btn:active{transform:scale(0.95)}.refresh-btn{flex-shrink:0;width:40px;height:40px;border-radius:50%;border:1px solid var(--glass-border);background:rgba(255,255,255,0.55);color:var(--primary-dark);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--glass-shadow);transition:all 0.2s;font-family:inherit;line-height:1;user-select:none}.refresh-btn:active{transform:scale(0.9);background:rgba(255,255,255,0.85)}@media (max-width:820px){.refresh-btn{width:36px;height:36px;font-size:18px}}</style></head><body><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div><div class="wrap"><div class="topbar"><a href="/" class="brand">📚 课程表</a><button class="refresh-btn" onclick="location.reload()" title="刷新" aria-label="刷新页面">🔄</button></div><header><h1>我的课程表</h1><div class="sub">安徽科技工程大学 2026 级研究生 · 机械<span class="sub-sec"> · 2026-2027 学年第一学期</span></div></header><div class="today-card"><div class="today-date" id="todayDate"></div><div class="today-week" id="todayWeek"></div><span class="today-tag" id="todayTag"></span><button class="back-today" id="backToday" onclick="backToToday()" style="display:none">📍 回到今天</button></div><div class="tabs"><button class="tab active" onclick="switchTab('day')">📅 今日课程</button><button class="tab" onclick="switchTab('week')">🗓️ 整周课表</button></div><div class="day-view active" id="view-day"><div class="day-nav-wrap"><button class="nav-arrow" onclick="shiftDay(-1)" title="前一天" aria-label="前一天">‹</button><div class="nav-body" id="todayCourses"></div><button class="nav-arrow" onclick="shiftDay(1)" title="后一天" aria-label="后一天">›</button></div></div><div class="week-view" id="view-week"><div class="week-grid" id="weekGrid"></div><div class="week-note">注：未特殊标注教室的课程均在学思5号楼505；综合能力提升班上课时间地点另行通知。</div></div><footer><p>© 2026 <a href="/">WQQ</a> · 每天打开自动显示今日课程</p></footer></div><div class="popup-overlay" id="classPopup" onclick="closePopup(event)"><div class="popup-box" onclick="event.stopPropagation()"><div class="popup-emoji" id="popupEmoji"></div><div class="popup-title" id="popupTitle"></div><div class="popup-sub" id="popupSub"></div><button class="popup-btn" onclick="closePopup()">知道了</button></div></div><script> const SEMESTER_START = new Date(2026,7,31);const PERIOD_TIME ={1: ['08:20','09:05'],2: ['09:15','10:00'],3: ['10:20','11:05'],4: ['11:15','12:00'],5: ['13:30','14:15'],6: ['14:25','15:10'],7: ['15:30','16:15'],8: ['16:25','17:10'],9: ['18:30','19:15'],10: ['19:25','20:10'],11: ['20:20','21:05']};const COURSES = [{day: 1,name: '工程伦理',teacher: '马万征',weeks: [2,3,4,5,7,8,9,12],s: 3,e: 4},{day: 1,name: '产品设计与开发创新实践',teacher: '李同杰、郑伟',weeks: [2,3,4,5],s: 7,e: 8},{day: 1,name: '现代农业装备设计与优化（双语）',teacher: '张新伟、余振',weeks: [2],s: 9,e: 10},{day: 1,name: '现代农业装备设计与优化（双语）',teacher: '张新伟、余振',weeks: [3,4],s: 9,e: 11},{day: 2,name: '新时代中国特色社会主义理论与实践',teacher: '张帆',weeks: [2,3,4,5,7,8,9,10,11,12],s: 2,e: 4},{day: 2,name: '新时代中国特色社会主义理论与实践',teacher: '张帆',weeks: [13],s: 3,e: 4},{day: 2,name: '研究生英语',teacher: '张瑞娥',weeks: [2,3,4,5,7,8,9,10,11,12],s: 5,e: 7},{day: 2,name: '研究生英语',teacher: '张瑞娥',weeks: [13],s: 5,e: 6},{day: 2,name: '智能农业装备及多学科创新前沿进展',teacher: '徐必勇、曾其良',weeks: [2,3,4,5,7,8,9],s: 9,e: 11},{day: 3,name: '高等工程数学',teacher: '司志远',weeks: [12,13,14,15],s: 2,e: 4},{day: 3,name: '高等农业机械学',teacher: '易克传、王晴晴',weeks: [2,3,4,7],s: 9,e: 11},{day: 4,name: '自然辩证法概论',teacher: '谢明星',weeks: [2,3,4,6],s: 2,e: 4},{day: 4,name: '自然辩证法概论',teacher: '谢明星',weeks: [7,8],s: 3,e: 4},{day: 4,name: '产品设计与开发创新实践',teacher: '李同杰、郑伟',weeks: [2,3,4,6],s: 5,e: 6},{day: 4,name: '智能农业装备及多学科创新前沿进展',teacher: '徐必勇、曾其良',weeks: [2,3,6],s: 9,e: 11},{day: 4,name: '智能农业装备及多学科创新前沿进展',teacher: '徐必勇、曾其良',weeks: [7],s: 9,e: 10},{day: 5,name: '试验设计与统计',teacher: '张春燕',weeks: [7,8,9,10],s: 1,e: 4},{day: 5,name: '高等工程数学',teacher: '司志远',weeks: [12,13,14,15],s: 2,e: 4},{day: 5,name: '公共选修课',teacher: '综合能力提升班',weeks: [9,10,11,12,13,14,15,16],s: 5,e: 8},{day: 5,name: '公共选修课',teacher: '',weeks: [9,10,11,12,13,14,15,16],s: 9,e: 10},{day: 6,name: '高等农业机械学',teacher: '易克传、王晴晴',weeks: [2,3,6],s: 5,e: 8},{day: 6,name: '论文写作与学术规范',teacher: '曹波',weeks: [6,7],s: 9,e: 11},{day: 6,name: '论文写作与学术规范',teacher: '曹波',weeks: [8],s: 9,e: 10},{day: 7,name: '农机装备传感与检测技术',teacher: '刘春辉、丁奇安',weeks: [2,3,6,7,8,9,10,11],s: 5,e: 8},];const WEEK_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];function getWeekNumber(date){const diff = date.getTime() - SEMESTER_START.getTime();const dayDiff = Math.floor(diff / (24 * 3600 * 1000));return Math.floor(dayDiff / 7) + 1;}function getTodayDayOfWeek(date){const d = date.getDay();return d === 0 ? 7 : d;}function formatWeeks(weeks){if (!weeks || !weeks.length) return '';const sorted = [...weeks].sort((a,b) => a - b);const ranges = [];let start = sorted[0],prev = sorted[0];for (let i = 1;i < sorted.length;i++){if (sorted[i] === prev + 1){prev = sorted[i];continue;}ranges.push(start === prev ? `${start}` : `${start}-${prev}`);start = prev = sorted[i];}ranges.push(start === prev ? `${start}` : `${start}-${prev}`);return ranges.join(',');}function formatPeriod(s,e){if (!PERIOD_TIME[s] || !PERIOD_TIME[e]) return '';return `${PERIOD_TIME[s][0]}-${PERIOD_TIME[e][1]}`;}function periodLabel(s,e){return s === e ? `第${s}节` : `第${s}-${e}节`;}let viewDate = new Date();function isSameDay(a,b){return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();}function shiftDay(delta){viewDate.setDate(viewDate.getDate() + delta);renderDay();}function backToToday(){viewDate = new Date();renderDay();}function renderDay(){const weekNum = getWeekNumber(viewDate);const dayOfWeek = getTodayDayOfWeek(viewDate);const isToday = isSameDay(viewDate,new Date());const dateStr = `${viewDate.getFullYear()}年${viewDate.getMonth() + 1}月${viewDate.getDate()}日`;document.getElementById('todayDate').textContent = dateStr + ' ' + WEEK_NAMES[dayOfWeek - 1];document.getElementById('todayWeek').textContent = '第 ' + weekNum + ' 周';document.getElementById('todayTag').textContent = isToday ? '今天' : '2026-2027 学年第一学期';document.getElementById('backToday').style.display = isToday ? 'none' : 'inline-block';const dayCourses = COURSES .filter(c => c.day === dayOfWeek && c.weeks.includes(weekNum)) .sort((a,b) => a.s - b.s);const container = document.getElementById('todayCourses');if (dayCourses.length === 0){container.innerHTML = ` <div class="empty-today"><div class="emoji">🎉</div><div class="msg">${isToday ? '今天没有课' : '这天没有课'}</div><div class="sub2">${isToday ? '好好休息，或者自习一下 ~' : '放松一下，做点别的 ~'}</div></div>`;return;}container.innerHTML = dayCourses.map(c => ` <div class="course-card"><div class="course-time"><div class="course-period">${periodLabel(c.s,c.e)}</div><div class="course-clock">${formatPeriod(c.s,c.e)}</div></div><div class="course-info"><div class="course-name">${c.name}</div><div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)}周</span><span class="room"><span class="dot">·</span>学思5号楼505</span></div></div></div>`).join('');}function renderWeek(){const now = new Date();const todayDay = getTodayDayOfWeek(now);const grid = document.getElementById('weekGrid');grid.innerHTML = WEEK_NAMES.map((name,idx) =>{const day = idx + 1;const dayCourses = COURSES .filter(c => c.day === day) .sort((a,b) => a.s - b.s);const isToday = day === todayDay;const items = dayCourses.map(c =>{const teacherText = c.teacher ? `<div class="wc-meta">${c.teacher}</div>` : '';return ` <div class="week-course"><div class="wc-name">${c.name}</div><div class="wc-meta">第${formatWeeks(c.weeks)}周 · ${periodLabel(c.s,c.e)}</div> ${teacherText}</div>`;}).join('');return ` <div class="day-col${isToday ? ' today' : ''}"><div class="day-col-head">${name}${isToday ? ' ⭐' : ''}</div> ${items || '<div class="week-course" style="opacity:0.5">无课</div>'}</div>`;}).join('');}function switchTab(name){document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));document.querySelectorAll('.day-view,.week-view').forEach(v => v.classList.remove('active'));if (name === 'day'){document.querySelector('.tab[onclick*="day"]').classList.add('active');document.getElementById('view-day').classList.add('active');}else{document.querySelector('.tab[onclick*="week"]').classList.add('active');document.getElementById('view-week').classList.add('active');renderWeek();}}renderDay();renderWeek();(function(){const now = new Date();const weekNum = getWeekNumber(now);const dayOfWeek = getTodayDayOfWeek(now);const todayCourses = COURSES .filter(c => c.day === dayOfWeek && c.weeks.includes(weekNum)) .sort((a,b) => a.s - b.s);if (todayCourses.length === 0) return;const nowMin = now.getHours() * 60 + now.getMinutes();function toMin(t){const [h,m] = t.split(':').map(Number);return h * 60 + m;}let currentCourse = null;for (const c of todayCourses){const start = toMin(PERIOD_TIME[c.s][0]);const end = toMin(PERIOD_TIME[c.e][1]);if (nowMin >= start && nowMin < end){currentCourse = c;break;}}if (currentCourse){const endMin = toMin(PERIOD_TIME[currentCourse.e][1]);const remain = endMin - nowMin;const nextCourse = todayCourses.find(c => c.s > currentCourse.e);let subText = '好好听课~';if (nextCourse){subText = '下节课：「' + nextCourse.name + '」（' + formatPeriod(nextCourse.s,nextCourse.e) + '）';}showPopup('📖','正在上课：' + currentCourse.name,'还有 ' + remain + ' 分钟下课<br>' + subText);return;}for (const c of todayCourses){const start = toMin(PERIOD_TIME[c.s][0]);const diff = start - nowMin;if (diff > 0 && diff <= 60){showPopup('⏰','还有 ' + diff + ' 分钟上「' + c.name + '」','时间：' + formatPeriod(c.s,c.e) + ' · ' + c.teacher);return;}}})();function showPopup(emoji,title,sub){document.getElementById('popupEmoji').textContent = emoji;document.getElementById('popupTitle').textContent = title;document.getElementById('popupSub').innerHTML = sub;document.getElementById('classPopup').classList.add('show');}function closePopup(e){if (e && e.target !== e.currentTarget) return;document.getElementById('classPopup').classList.remove('show');}if ('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(() =>{});}</script></html></body></html>
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="x-dns-prefetch-control" content="on">
+<link rel="preconnect" href="https://xiaoquqi.dpdns.org">
+<link rel="dns-prefetch" href="https://xiaoquqi.dpdns.org">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="WQQ 的课程表 - 每天打开查看今日课程">
+<title>课程表 · WQQ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+
+:root{
+  --primary:#4A90D9;
+  --primary-light:#7AB8EC;
+  --primary-dark:#2F6FA8;
+  --accent:#A8D4F5;
+  --warm:#F4A261;--peach:#FF9A8B;--peach-light:#FFB4A2;--peach-glow:rgba(255,154,139,.15);
+  --warm-light:#FDDCB5;
+  --text:#17324F;
+  --text-sec:#3D5A75;
+  --text-light:#7A93AC;
+  --glass-bg:rgba(255,255,255,0.42);
+  --glass-bg-hover:rgba(255,255,255,0.58);
+  --glass-border:rgba(255,255,255,0.55);
+  --glass-border-inner:rgba(255,255,255,0.18);
+  --glass-highlight:rgba(255,255,255,0.48);
+  --glass-shadow:0 8px 32px rgba(60,110,170,0.10),0 1px 3px rgba(60,110,170,0.06);
+  --glass-shadow-lg:0 16px 48px rgba(60,110,170,0.14),0 2px 8px rgba(60,110,170,0.08);
+  --radius:16px;
+  --radius-lg:22px;
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','PingFang SC','Helvetica Neue','Microsoft YaHei',sans-serif;
+  color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background:linear-gradient(165deg,#f2f5f9 0%,#ecf1f7 30%,#e4ecf4 60%,#dce6f0 100%);
+  padding-top:var(--safe-area-inset-top,0px);
+  padding-bottom:max(var(--safe-area-inset-bottom,0px),60px);
+}
+
+/* ═══ Breathing blobs ═══ */
+.blob{position:fixed;z-index:-1;border-radius:50%;filter:blur(80px);opacity:.30;pointer-events:none;}
+.blob-1{width:550px;height:550px;background:rgba(100,165,250,.30);top:-80px;left:-60px;animation:none}
+.blob-2{width:480px;height:480px;background:rgba(150,200,250,.28);bottom:8%;right:-60px;animation:none}
+.blob-3{width:420px;height:420px;background:rgba(255,154,139,.20);top:35%;left:45%;animation:none}
+
+/* ═══ Ambient light veil ═══ */
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 35%,rgba(160,200,250,.22) 0%,rgba(200,170,240,.10) 25%,rgba(244,180,170,.08) 50%,transparent 75%);
+  will-change:auto;
+}
+
+/* ═══ Layout ═══ */
+.wrap{max-width:980px;margin:0 auto;padding:30px 20px 0;transform:translateZ(0);-webkit-transform:translateZ(0);position:relative;z-index:1}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+.brand{font-size:20px;font-weight:800;color:var(--primary-dark);letter-spacing:-.5px;display:flex;align-items:center;gap:8px;-webkit-user-select:none;user-select:none}
+.back-home{font-size:13px;color:var(--primary-dark);text-decoration:none;font-weight:600;padding:8px 16px;border-radius:980px;background:var(--glass-bg);border:1px solid rgba(255,154,139,.20);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);transition:background .2s var(--ease-out),box-shadow .2s var(--ease-out)}
+.back-home:hover{background:var(--glass-bg-hover);box-shadow:var(--glass-shadow)}
+
+header{text-align:center;margin-bottom:28px}
+h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 35%,var(--peach) 70%,var(--warm) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:13px;color:var(--text-sec)}
+.sub-sec{display:inline}
+
+/* ═══ Today card — glass + breathing highlight ═══ */
+.today-card{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  padding:26px 28px;
+  box-shadow:var(--glass-shadow-lg);
+  margin-bottom:22px;
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:18px;justify-content:center;
+  backdrop-filter:blur(24px) saturate(180%) contrast(1.02);
+  -webkit-backdrop-filter:blur(24px) saturate(180%) contrast(1.02);
+
+}
+.today-card::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.06) 40%,rgba(168,212,245,.06) 70%,rgba(244,180,170,.05));
+}
+.today-card::after{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,transparent 10%,var(--glass-highlight) 50%,transparent 90%);
+}
+
+.today-date{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--text) 40%,var(--primary) 70%,var(--peach) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.today-week{font-size:15px;font-weight:600;color:var(--primary-dark)}
+.today-tag{font-size:13px;padding:4px 14px;border-radius:980px;background:linear-gradient(135deg,rgba(74,144,217,.10),rgba(255,154,139,.12));color:var(--primary-dark);font-weight:600;border:1px solid rgba(255,154,139,.15)}
+.back-today{font-size:13px;padding:6px 16px;border-radius:980px;border:1px solid rgba(74,144,217,.15);background:rgba(74,144,217,.08);color:var(--primary-dark);font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s var(--ease-out)}
+.back-today:hover{background:rgba(74,144,217,.14);box-shadow:0 4px 12px rgba(74,144,217,.10)}
+.back-today:active{transform:scale(.95)}
+
+/* ═══ Tabs ═══ */
+.tabs{display:flex;gap:10px;justify-content:center;margin-bottom:22px}
+.tab{
+  padding:9px 22px;border-radius:980px;font-size:14px;font-weight:600;cursor:pointer;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+  color:var(--text-sec);
+  font-family:inherit;
+  backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);
+  transition:all .2s var(--ease-out);
+}
+.tab:active{transform:scale(.95)}
+.tab.active{
+  background:var(--primary);color:#fff;border-color:transparent;
+  box-shadow:0 4px 16px rgba(47,111,168,.30);
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+
+/* ═══ Day navigation ═══ */
+.day-nav-wrap{display:flex;align-items:flex-start;gap:14px;justify-content:center}
+.nav-arrow{
+  flex-shrink:0;width:48px;height:48px;border-radius:50%;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+  color:var(--primary);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;margin-top:20px;
+  backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);
+  box-shadow:0 4px 14px rgba(74,144,217,.10);
+  transition:all .2s var(--ease-out);
+  user-select:none;will-change:transform;
+}
+.nav-arrow:hover{background:var(--glass-bg-hover);box-shadow:0 6px 20px rgba(74,144,217,.16);transform:scale(1.06)}
+.nav-arrow:active{transform:scale(.94);box-shadow:0 2px 8px rgba(74,144,217,.10)}
+.nav-arrow svg{width:22px;height:22px;display:block;flex-shrink:0;transition:transform .15s var(--ease-out)}
+.nav-arrow:active svg{transform:translateX(var(--arrow-dir,0))}
+.nav-body{flex:1;min-width:0;max-width:620px}
+
+/* ═══ Day view ═══ */
+.day-view{display:none}
+.day-view.active{display:block;animation:fadeIn .4s var(--ease-out)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+
+/* ═══ Course card — glass ═══ */
+.course-card{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  box-shadow:var(--glass-shadow);
+  margin-bottom:12px;
+  display:flex;gap:10px;align-items:center;min-height:80px;
+  backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);
+  transition:transform .2s var(--ease-out),box-shadow .2s var(--ease-out);
+}
+.course-card::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.04) 50%,rgba(168,212,245,.04));
+}
+.course-card::after{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,transparent 5%,var(--glass-highlight) 50%,transparent 95%);
+}
+.course-card:active{transform:scale(.985);box-shadow:var(--glass-shadow)}
+
+.course-time{
+  flex-shrink:0;min-width:92px;margin-left:36px;text-align:center;
+  background:rgba(74,144,217,.08);
+  border-radius:12px;padding:10px 12px;
+  border:1px solid rgba(255,255,255,.50);
+}
+.course-period{font-size:16px;font-weight:800;color:var(--primary-dark);white-space:nowrap;line-height:1.35}
+.course-clock{font-size:12px;color:var(--text-sec);margin-top:2px;white-space:nowrap;line-height:1.35}
+.course-info{flex:1;min-width:0;margin-right:28px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.course-name{font-size:17px;font-weight:700;background:linear-gradient(135deg,var(--text) 30%,var(--primary-dark) 65%,var(--peach) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px;line-height:1.4}
+.course-meta{font-size:13px;color:var(--text-sec);line-height:1.45}
+.course-meta .dot{margin:0 6px;color:var(--text-light)}
+
+/* ═══ Empty state ═══ */
+.empty-today{text-align:center;padding:60px 20px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--glass-shadow);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%)}
+.empty-today .emoji{font-size:52px;margin-bottom:12px}
+.empty-today .msg{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--text),var(--primary),var(--peach));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.empty-today .sub2{font-size:13px;color:var(--text-sec);margin-top:6px}
+
+/* ═══ Week view ═══ */
+.week-view{display:none}
+.week-view.active{display:block;animation:fadeIn .4s var(--ease-out)}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.day-col{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:14px;padding:12px 10px;box-shadow:var(--glass-shadow);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%)}
+.day-col.today{border:2px solid rgba(74,144,217,.30);background:rgba(255,255,255,.55);box-shadow:0 4px 20px rgba(74,144,217,.10)}
+.day-col-head{text-align:center;font-weight:700;font-size:13px;color:var(--primary-dark);padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.50)}
+.week-course{font-size:12px;color:var(--text-sec);padding:7px 8px;margin-bottom:7px;background:rgba(74,144,217,.06);border-radius:10px;border-left:3px solid rgba(74,144,217,.22);line-height:1.5;transition:background .15s var(--ease-out)}
+.week-course .wc-name{font-weight:700;background:linear-gradient(90deg,var(--text),var(--primary-dark) 70%,var(--peach) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:12.5px}
+.week-course .wc-meta{font-size:11px;color:var(--text-light);margin-top:2px}
+.week-note{text-align:center;font-size:12px;color:var(--text-light);margin-top:18px}
+
+/* ═══ Footer ═══ */
+footer{text-align:center;margin-top:36px;color:var(--text-sec);font-size:12px}
+footer a{color:var(--primary-dark);text-decoration:none;font-weight:600}
+
+/* ═══ Refresh button ═══ */
+.refresh-btn{
+  flex-shrink:0;width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+  color:var(--primary-dark);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);
+  box-shadow:0 4px 14px rgba(74,144,217,.08);
+  transition:all .2s var(--ease-out);
+  font-family:inherit;line-height:1;user-select:none;
+}
+.refresh-btn:active{transform:scale(.85);background:var(--glass-bg-hover)}
+.refresh-btn.spinning{animation:spinOnce .5s ease}
+@keyframes spinOnce{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+/* ═══ Popup — glass overlay ═══ */
+.popup-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.28);
+  backdrop-filter:blur(8px) saturate(120%);-webkit-backdrop-filter:blur(8px) saturate(120%);
+  justify-content:center;align-items:center;padding:24px;
+  animation:popupFadeIn .25s var(--ease-out);
+}
+.popup-overlay.show{display:flex}
+@keyframes popupFadeIn{from{opacity:0}to{opacity:1}}
+.popup-box{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:rgba(255,255,255,.82);
+  border:1px solid rgba(255,255,255,.70);
+  border-radius:22px;padding:32px 28px 24px;
+  max-width:360px;width:100%;
+  box-shadow:0 24px 64px rgba(50,100,170,.20),0 8px 24px rgba(50,100,170,.10);
+  text-align:center;
+  animation:popupSlideUp .3s var(--ease-out);
+  backdrop-filter:blur(40px) saturate(200%);-webkit-backdrop-filter:blur(40px) saturate(200%);
+}
+.popup-box::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.35),rgba(255,255,255,.08));
+}
+.popup-box::after{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,transparent 10%,rgba(255,255,255,.60) 50%,transparent 90%);
+}
+@keyframes popupSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.popup-emoji{font-size:48px;margin-bottom:12px}
+.popup-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.5}
+.popup-sub{font-size:14px;color:var(--text-sec);margin-bottom:20px;line-height:1.6}
+.popup-btn{
+  display:inline-block;padding:10px 36px;border-radius:980px;border:none;
+  background:var(--primary);color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;box-shadow:0 6px 18px rgba(47,111,168,.30);
+  transition:all .15s var(--ease-out);font-family:inherit;
+}
+.popup-btn:hover{box-shadow:0 8px 24px rgba(47,111,168,.40);transform:translateY(-1px)}
+.popup-btn:active{transform:scale(.95);box-shadow:0 4px 12px rgba(47,111,168,.25)}
+
+/* ═══ Mobile ═══ */
+@media(max-width:820px){
+  body{padding-top:max(var(--safe-area-inset-top,0px),28px)}
+  .blob{filter:blur(40px);opacity:.18}
+  .wrap{padding-top:14px}
+  .topbar{margin-bottom:12px}
+  .brand{font-size:17px}
+  .back-home{padding:6px 12px;font-size:12px}
+  header{margin-bottom:12px}
+  h1{font-size:22px;margin-bottom:4px}
+  .today-card{padding:12px 16px;margin-bottom:12px;background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.80);box-shadow:0 2px 12px rgba(60,110,170,.06)}
+  .today-date{font-size:18px}
+  .today-week{font-size:13px}
+  .tabs{margin-bottom:12px}
+  .tab{padding:7px 18px;font-size:13px;background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.75)}
+  .week-grid{grid-template-columns:repeat(2,1fr)}
+  .course-card{flex-direction:column;gap:8px;padding:14px 16px;min-height:0;background:rgba(255,255,255,.60);border:1px solid rgba(255,255,255,.78);box-shadow:0 2px 10px rgba(60,110,170,.05)}
+  .course-time{width:100%;display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;margin-left:0;background:rgba(74,144,217,.06);border:1px solid rgba(255,255,255,.45)}
+  .course-meta .room{display:block;margin-top:3px}
+  .course-meta .dot{margin:0 2px}
+  .course-info{margin-right:0}
+  .sub-sec{display:block}
+  .nav-arrow{background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.75)}
+  .refresh-btn{background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.75)}
+  .empty-today{background:rgba(255,255,255,.60);border:1px solid rgba(255,255,255,.78)}
+  .day-col{background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.72)}
+  .popup-box{background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.90)}
+}
+@media(max-width:460px){
+  .week-grid{grid-template-columns:1fr}
+  .today-card{flex-direction:column;align-items:center;gap:6px}
+  .nav-arrow{width:42px;height:42px}
+  .nav-arrow svg{width:20px;height:20px}
+  .refresh-btn{width:36px;height:36px;font-size:18px}
+  .day-nav-wrap{gap:8px}
+}
+
+/* ═══ Reduced motion ═══ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .blob,.blob-1,.blob-2,.blob-3{animation:none!important;opacity:.25}
+  body::after{animation:none!important;opacity:.8}
+  .today-card{animation:none!important}
+}
+
+/* ═══ Selection & focus ═══ */
+::selection{background:rgba(74,144,217,.20);color:var(--text)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+
+/* ═══ Mobile performance: kill expensive animations ═══ */
+@media(max-width:820px){
+  .blob,.blob-1,.blob-2,.blob-3{animation:none!important;opacity:.18;filter:blur(40px)}
+  body{animation:none!important;background-size:100% 100%!important}
+  body::after{animation:none!important;opacity:.7}
+  .today-card{animation:none!important}
+  .course-card,.tab,.nav-arrow,.refresh-btn,.day-col,.empty-today{animation:none!important}
+}
+
+/* ═══ Mobile: zero-cost static background ═══ */
+@media(max-width:820px){
+  .blob,.blob-1,.blob-2,.blob-3{filter:none!important;opacity:.22}
+  body::after{display:none!important}
+  .today-card,.course-card,.empty-today,.day-col{box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .nav-arrow,.refresh-btn,.tab,.back-home{box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  *{will-change:auto!important}
+}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <span class="brand">📚 课程表</span>
+    <button class="refresh-btn" onclick="this.classList.add('spinning');setTimeout(()=>location.reload(),400)" title="刷新" aria-label="刷新页面">🔄</button>
+  </div>
+
+  <header>
+    <h1>我的课程表</h1>
+    <div class="sub">安徽科技工程大学 2026 级研究生 · 机械<span class="sub-sec"> · 2026-2027 学年第一学期</span></div>
+  </header>
+
+  <div class="today-card">
+    <div class="today-date" id="todayDate"></div>
+    <div class="today-week" id="todayWeek"></div>
+    <span class="today-tag" id="todayTag"></span>
+    <button class="back-today" id="backToday" onclick="backToToday()" style="display:none">📍 回到今天</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('day')">📅 今日课程</button>
+    <button class="tab" onclick="switchTab('week')">🗓️ 整周课表</button>
+  </div>
+
+  <div class="day-view active" id="view-day">
+    <div class="day-nav-wrap">
+      <button class="nav-arrow" onclick="shiftDay(-1)" title="前一天" aria-label="前一天">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="nav-body" id="todayCourses"></div>
+      <button class="nav-arrow" onclick="shiftDay(1)" title="后一天" aria-label="后一天">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="week-view" id="view-week">
+    <div class="week-grid" id="weekGrid"></div>
+    <div class="week-note">注：未特殊标注教室的课程均在学思5号楼505；综合能力提升班上课时间地点另行通知。</div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="classPopup" onclick="closePopup(event)">
+  <div class="popup-box" onclick="event.stopPropagation()">
+    <div class="popup-emoji" id="popupEmoji"></div>
+    <div class="popup-title" id="popupTitle"></div>
+    <div class="popup-sub" id="popupSub"></div>
+    <button class="popup-btn" onclick="closePopup()">知道了</button>
+  </div>
+</div>
+
+<script>
+const SEMESTER_START = new Date(2026,7,31);
+const PERIOD_TIME = {1:['08:20','09:05'],2:['09:15','10:00'],3:['10:20','11:05'],4:['11:15','12:00'],5:['13:30','14:15'],6:['14:25','15:10'],7:['15:30','16:15'],8:['16:25','17:10'],9:['18:30','19:15'],10:['19:25','20:10'],11:['20:20','21:05']};
+const COURSES = [
+{day:1,name:'工程伦理',teacher:'马万征',weeks:[2,3,4,5,7,8,9,12],s:3,e:4},
+{day:1,name:'产品设计与开发创新实践',teacher:'李同杰、郑伟',weeks:[2,3,4,5],s:7,e:8},
+{day:1,name:'现代农业装备设计与优化（双语）',teacher:'张新伟、余振',weeks:[2],s:9,e:10},
+{day:1,name:'现代农业装备设计与优化（双语）',teacher:'张新伟、余振',weeks:[3,4],s:9,e:11},
+{day:2,name:'新时代中国特色社会主义理论与实践',teacher:'张帆',weeks:[2,3,4,5,7,8,9,10,11,12],s:2,e:4},
+{day:2,name:'新时代中国特色社会主义理论与实践',teacher:'张帆',weeks:[13],s:3,e:4},
+{day:2,name:'研究生英语',teacher:'张瑞娥',weeks:[2,3,4,5,7,8,9,10,11,12],s:5,e:7},
+{day:2,name:'研究生英语',teacher:'张瑞娥',weeks:[13],s:5,e:6},
+{day:2,name:'智能农业装备及多学科创新前沿进展',teacher:'徐必勇、曾其良',weeks:[2,3,4,5,7,8,9],s:9,e:11},
+{day:3,name:'高等工程数学',teacher:'司志远',weeks:[12,13,14,15],s:2,e:4},
+{day:3,name:'高等农业机械学',teacher:'易克传、王晴晴',weeks:[2,3,4,7],s:9,e:11},
+{day:4,name:'自然辩证法概论',teacher:'谢明星',weeks:[2,3,4,6],s:2,e:4},
+{day:4,name:'自然辩证法概论',teacher:'谢明星',weeks:[7,8],s:3,e:4},
+{day:4,name:'产品设计与开发创新实践',teacher:'李同杰、郑伟',weeks:[2,3,4,6],s:5,e:6},
+{day:4,name:'智能农业装备及多学科创新前沿进展',teacher:'徐必勇、曾其良',weeks:[2,3,6],s:9,e:11},
+{day:4,name:'智能农业装备及多学科创新前沿进展',teacher:'徐必勇、曾其良',weeks:[7],s:9,e:10},
+{day:5,name:'试验设计与统计',teacher:'张春燕',weeks:[7,8,9,10],s:1,e:4},
+{day:5,name:'高等工程数学',teacher:'司志远',weeks:[12,13,14,15],s:2,e:4},
+{day:5,name:'公共选修课',teacher:'综合能力提升班',weeks:[9,10,11,12,13,14,15,16],s:5,e:8},
+{day:5,name:'公共选修课',teacher:'',weeks:[9,10,11,12,13,14,15,16],s:9,e:10},
+{day:6,name:'高等农业机械学',teacher:'易克传、王晴晴',weeks:[2,3,6],s:5,e:8},
+{day:6,name:'论文写作与学术规范',teacher:'曹波',weeks:[6,7],s:9,e:11},
+{day:6,name:'论文写作与学术规范',teacher:'曹波',weeks:[8],s:9,e:10},
+{day:7,name:'农机装备传感与检测技术',teacher:'刘春辉、丁奇安',weeks:[2,3,6,7,8,9,10,11],s:5,e:8}
+];
+
+const WEEK_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];
+
+function getWeekNumber(date) {
+  const diff = date.getTime() - SEMESTER_START.getTime();
+  const dayDiff = Math.floor(diff / (24 * 3600 * 1000));
+  return Math.floor(dayDiff / 7) + 1;
+}
+
+function getTodayDayOfWeek(date) {
+  const d = date.getDay();
+  return d === 0 ? 7 : d;
+}
+
+function formatWeeks(weeks) {
+  if (!weeks || !weeks.length) return '';
+  const sorted = [...weeks].sort((a,b) => a - b);
+  const ranges = [];
+  let start = sorted[0], prev = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === prev + 1) { prev = sorted[i]; continue; }
+    ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+    start = prev = sorted[i];
+  }
+  ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+  return ranges.join(',');
+}
+
+function formatPeriod(s, e) {
+  if (!PERIOD_TIME[s] || !PERIOD_TIME[e]) return '';
+  return `${PERIOD_TIME[s][0]}-${PERIOD_TIME[e][1]}`;
+}
+
+function periodLabel(s, e) {
+  return s === e ? `第${s}节` : `第${s}-${e}节`;
+}
+
+let viewDate = new Date();
+
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function shiftDay(delta) {
+  const arrows = document.querySelectorAll('.nav-arrow');
+  const dir = delta > 0 ? 1 : -1;
+  arrows.forEach(a => a.style.setProperty('--arrow-dir', dir * 4 + 'px'));
+  setTimeout(() => arrows.forEach(a => a.style.setProperty('--arrow-dir', '0px')), 150);
+  const container = document.getElementById('todayCourses');
+  container.style.animation = 'none';
+  container.offsetHeight;
+  container.style.animation = (delta > 0 ? 'slideInLeft' : 'slideInRight') + ' .65s var(--ease-out)';
+  viewDate.setDate(viewDate.getDate() + delta);
+  renderDay();
+}
+
+function backToToday() {
+  viewDate = new Date();
+  renderDay();
+}
+
+function renderDay() {
+  const weekNum = getWeekNumber(viewDate);
+  const dayOfWeek = getTodayDayOfWeek(viewDate);
+  const isToday = isSameDay(viewDate, new Date());
+  const dateStr = `${viewDate.getFullYear()}年${viewDate.getMonth() + 1}月${viewDate.getDate()}日`;
+  document.getElementById('todayDate').textContent = dateStr + ' ' + WEEK_NAMES[dayOfWeek - 1];
+  document.getElementById('todayWeek').textContent = '第 ' + weekNum + ' 周';
+  document.getElementById('todayTag').textContent = isToday ? '今天' : '2026-2027 学年第一学期';
+  document.getElementById('backToday').style.display = isToday ? 'none' : 'inline-block';
+  const dayCourses = COURSES
+    .filter(c => c.day === dayOfWeek && c.weeks.includes(weekNum))
+    .sort((a,b) => a.s - b.s);
+  const container = document.getElementById('todayCourses');
+  if (dayCourses.length === 0) {
+    container.innerHTML = `
+      <div class="empty-today">
+        <div class="emoji">🎉</div>
+        <div class="msg">${isToday ? '今天没有课' : '这天没有课'}</div>
+        <div class="sub2">${isToday ? '好好休息，或者自习一下 ~' : '放松一下，做点别的 ~'}</div>
+      </div>`;
+    return;
+  }
+  container.innerHTML = dayCourses.map((c,i) => `
+    <div class="course-card">
+      <div class="course-time">
+        <div class="course-period">${periodLabel(c.s,c.e)}</div>
+        <div class="course-clock">${formatPeriod(c.s,c.e)}</div>
+      </div>
+      <div class="course-info">
+        <div class="course-name">${c.name}</div>
+        <div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)}周</span><span class="room"><span class="dot">·</span>学思5号楼505</span></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderWeek() {
+  const now = new Date();
+  const todayDay = getTodayDayOfWeek(now);
+  const grid = document.getElementById('weekGrid');
+  grid.innerHTML = WEEK_NAMES.map((name, idx) => {
+    const day = idx + 1;
+    const dayCourses = COURSES
+      .filter(c => c.day === day)
+      .sort((a,b) => a.s - b.s);
+    const isToday = day === todayDay;
+    const items = dayCourses.map((c,i) => {
+      const teacherText = c.teacher ? `<div class="wc-meta">${c.teacher}</div>` : '';
+      return `
+        <div class="week-course">
+          <div class="wc-name">${c.name}</div>
+          <div class="wc-meta">第${formatWeeks(c.weeks)}周 · ${periodLabel(c.s,c.e)}</div>
+          ${teacherText}
+        </div>`;
+    }).join('');
+    return `
+      <div class="day-col${isToday ? ' today' : ''}">
+        <div class="day-col-head">${name}${isToday ? ' ⭐' : ''}</div>
+        ${items || '<div class="week-course" style="opacity:.5">无课</div>'}
+      </div>`;
+  }).join('');
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.day-view,.week-view').forEach(v => v.classList.remove('active'));
+  if (name === 'day') {
+    document.querySelector('.tab[onclick*="day"]').classList.add('active');
+    document.getElementById('view-day').classList.add('active');
+  } else {
+    document.querySelector('.tab[onclick*="week"]').classList.add('active');
+    document.getElementById('view-week').classList.add('active');
+    renderWeek();
+  }
+}
+
+renderDay();
+renderWeek();
+
+// ── Class reminder popup ──
+(function() {
+  const now = new Date();
+  const weekNum = getWeekNumber(now);
+  const dayOfWeek = getTodayDayOfWeek(now);
+  const todayCourses = COURSES
+    .filter(c => c.day === dayOfWeek && c.weeks.includes(weekNum))
+    .sort((a,b) => a.s - b.s);
+  if (todayCourses.length === 0) return;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  function toMin(t) { const [h,m] = t.split(':').map(Number); return h * 60 + m; }
+  let currentCourse = null;
+  for (const c of todayCourses) {
+    const start = toMin(PERIOD_TIME[c.s][0]);
+    const end = toMin(PERIOD_TIME[c.e][1]);
+    if (nowMin >= start && nowMin < end) { currentCourse = c; break; }
+  }
+  if (currentCourse) {
+    const endMin = toMin(PERIOD_TIME[currentCourse.e][1]);
+    const remain = endMin - nowMin;
+    const nextCourse = todayCourses.find(c => c.s > currentCourse.e);
+    let subText = '好好听课~';
+    if (nextCourse) {
+      subText = '下节课：「' + nextCourse.name + '」（' + formatPeriod(nextCourse.s, nextCourse.e) + '）';
+    }
+    showPopup('📖', '正在上课：' + currentCourse.name, '还有 ' + remain + ' 分钟下课<br>' + subText);
+    return;
+  }
+  for (const c of todayCourses) {
+    const start = toMin(PERIOD_TIME[c.s][0]);
+    const diff = start - nowMin;
+    if (diff > 0 && diff <= 60) {
+      showPopup('⏰', '还有 ' + diff + ' 分钟上「' + c.name + '」', '时间：' + formatPeriod(c.s, c.e) + ' · ' + c.teacher);
+      return;
+    }
+  }
+})();
+
+function showPopup(emoji, title, sub) {
+  document.getElementById('popupEmoji').textContent = emoji;
+  document.getElementById('popupTitle').textContent = title;
+  document.getElementById('popupSub').innerHTML = sub;
+  document.getElementById('classPopup').classList.add('show');
+}
+
+function closePopup(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('classPopup').classList.remove('show');
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
