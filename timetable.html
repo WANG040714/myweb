@@ -248,7 +248,7 @@ footer a{color:var(--primary-dark);text-decoration:none;font-weight:600}
 }
 @keyframes popupSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .popup-emoji{font-size:48px;margin-bottom:12px}
-.popup-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.5}
+.popup-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.5;text-align:center}
 .popup-sub{font-size:14px;color:var(--text-sec);margin-bottom:20px;line-height:1.6}
 .popup-btn{
   display:inline-block;padding:10px 36px;border-radius:980px;border:none;
@@ -583,7 +583,7 @@ renderWeek();
     const start = toMin(PERIOD_TIME[c.s][0]);
     const diff = start - nowMin;
     if (diff > 0 && diff <= 60) {
-      showPopup('⏰', '还有 ' + diff + ' 分钟上「' + c.name + '」', '时间：' + formatPeriod(c.s, c.e) + ' · ' + c.teacher);
+      showPopup('⏰', '还有 ' + diff + ' 分钟上<br>' + c.name, '时间：' + formatPeriod(c.s, c.e) + ' · ' + c.teacher);
       return;
     }
   }
