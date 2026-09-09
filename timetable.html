@@ -583,7 +583,7 @@ renderWeek();
     const start = toMin(PERIOD_TIME[c.s][0]);
     const diff = start - nowMin;
     if (diff > 0 && diff <= 60) {
-      showPopup('⏰', '还有 ' + diff + ' 分钟上<br>' + c.name, '时间：' + formatPeriod(c.s, c.e) + ' · ' + c.teacher);
+      showPopup('⏰', '还有 ' + diff + ' 分钟上<br>「' + c.name + '」', '时间：' + formatPeriod(c.s, c.e) + ' · ' + c.teacher);
       return;
     }
   }
