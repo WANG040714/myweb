@@ -39,21 +39,21 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','PingFang SC','Helvetica Neue','Microsoft YaHei',sans-serif;
   color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;
   min-height:100vh;
-  background:linear-gradient(165deg,#f2f5f9 0%,#ecf1f7 30%,#e4ecf4 60%,#dce6f0 100%);
+  background:linear-gradient(165deg,#e8f0f8 0%,#d4e6f4 30%,#bdd8ee 60%,#a8cce6 100%);
   padding-top:var(--safe-area-inset-top,0px);
   padding-bottom:max(var(--safe-area-inset-bottom,0px),60px);
 }
 
 /* ═══ Breathing blobs ═══ */
 .blob{position:fixed;z-index:-1;border-radius:50%;filter:blur(80px);opacity:.30;pointer-events:none;}
-.blob-1{width:550px;height:550px;background:rgba(100,165,250,.30);top:-80px;left:-60px;animation:none}
-.blob-2{width:480px;height:480px;background:rgba(150,200,250,.28);bottom:8%;right:-60px;animation:none}
-.blob-3{width:420px;height:420px;background:rgba(255,154,139,.20);top:35%;left:45%;animation:none}
+.blob-1{width:550px;height:550px;background:rgba(80,200,240,.30);top:-80px;left:-60px;animation:none}
+.blob-2{width:480px;height:480px;background:rgba(120,210,250,.25);bottom:8%;right:-60px;animation:none}
+.blob-3{width:420px;height:420px;background:rgba(140,220,230,.22);top:35%;left:45%;animation:none}
 
 /* ═══ Ambient light veil ═══ */
 body::after{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse at 50% 35%,rgba(160,200,250,.22) 0%,rgba(200,170,240,.10) 25%,rgba(244,180,170,.08) 50%,transparent 75%);
+  background:radial-gradient(ellipse at 50% 35%,rgba(100,200,250,.20) 0%,rgba(160,220,245,.12) 30%,rgba(200,240,255,.08) 55%,transparent 75%);
   will-change:auto;
 }
 
