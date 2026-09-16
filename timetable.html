@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta http-equiv="x-dns-prefetch-control" content="on">
@@ -45,7 +45,7 @@ body{
 }
 
 /* ═══ Breathing blobs ═══ */
-.blob{position:fixed;z-index:-1;border-radius:50%;filter:blur(60px);opacity:.25;pointer-events:none;}
+.blob{position:fixed;z-index:-1;border-radius:50%;filter:blur(20px);opacity:.15;pointer-events:none;}
 .blob-1{width:550px;height:550px;background:rgba(80,200,240,.30);top:-80px;left:-60px;animation:none}
 .blob-2{width:480px;height:480px;background:rgba(120,210,250,.25);bottom:8%;right:-60px;animation:none}
 .blob-3{width:420px;height:420px;background:rgba(140,220,230,.22);top:35%;left:45%;animation:none}
@@ -75,8 +75,7 @@ h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;backgr
   box-shadow:var(--glass-shadow-lg);
   margin-bottom:22px;
   display:flex;flex-wrap:wrap;align-items:baseline;gap:18px;justify-content:center;
-  backdrop-filter:blur(10px) saturate(130%);
-  -webkit-backdrop-filter:blur(10px) saturate(130%);
+  
 
 }
 .today-card::before{
@@ -124,7 +123,7 @@ h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;backgr
   -webkit-
   box-shadow:0 2px 8px rgba(74,144,217,.06);
   transition:all .2s var(--ease-out);
-  user-select:none;will-change:transform;
+  user-select:none;
 }
 .nav-arrow:hover{background:var(--glass-bg-hover);box-shadow:0 6px 20px rgba(74,144,217,.16);transform:scale(1.06)}
 .nav-arrow:active{transform:scale(.94);box-shadow:0 2px 8px rgba(74,144,217,.10)}
@@ -149,7 +148,7 @@ h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;backgr
   box-shadow:var(--glass-shadow);
   margin-bottom:12px;
   display:flex;gap:10px;align-items:center;min-height:80px;
-  backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);
+  
   transition:transform .2s var(--ease-out),box-shadow .2s var(--ease-out);
 }
 .course-card::before{
@@ -176,7 +175,7 @@ h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;backgr
 .course-meta .dot{margin:0 6px;color:var(--text-light)}
 
 /* ═══ Empty state ═══ */
-.empty-today{text-align:center;padding:60px 20px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--glass-shadow);backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%)}
+.empty-today{text-align:center;padding:60px 20px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--glass-shadow);}
 .empty-today .emoji{font-size:52px;margin-bottom:12px}
 .empty-today .msg{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--text),var(--primary),var(--peach));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .empty-today .sub2{font-size:13px;color:var(--text-sec);margin-top:6px}
@@ -185,7 +184,7 @@ h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;backgr
 .week-view{display:none}
 .week-view.active{display:block;animation:fadeIn .4s var(--ease-out)}
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-.day-col{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:14px;padding:12px 10px;box-shadow:var(--glass-shadow);backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%)}
+.day-col{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:14px;padding:12px 10px;box-shadow:var(--glass-shadow);}
 .day-col.today{border:2px solid rgba(74,144,217,.30);background:rgba(255,255,255,.55);box-shadow:0 4px 20px rgba(74,144,217,.10)}
 .day-col-head{text-align:center;font-weight:700;font-size:13px;color:var(--primary-dark);padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.50)}
 .week-course{font-size:12px;color:var(--text-sec);padding:7px 8px;margin-bottom:7px;background:rgba(74,144,217,.06);border-radius:10px;border-left:3px solid rgba(74,144,217,.22);line-height:1.5;transition:background .15s var(--ease-out)}
