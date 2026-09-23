@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="WQQ 的个人网站 — 写代码、拍照、把无聊的日子过出一点声响">
-    <title>WQQ · 把想法做成网页</title>
+    <meta name="description" content="WQQ 的个人网站，分享作品、技能与联系方式">
+    <title>WQQ 的个人网站</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%234A90D9'/><text y='.9em' font-size='78' x='10'>⚡</text></svg>">
     <style>
         :root {
@@ -46,7 +46,6 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
     background-color: var(--bg);
     background-image: linear-gradient(180deg, #e8f3fc 0%, var(--bg) 48%, #fdeef3 100%);
-    background-attachment: scroll;
     color: var(--ink);
     line-height: 1.55;
     min-height: 100dvh;
@@ -292,7 +291,6 @@ h2.section-title {
     animation: riseIn .5s cubic-bezier(.16, 1, .3, 1) both;
 }
 .hero-copy h1 .line:nth-child(2) span { animation-delay: .06s; }
-.hero-copy h1 .line:nth-child(3) span { animation-delay: .12s; }
 @keyframes riseIn {
     from { transform: translateY(110%); }
     to { transform: translateY(0); }
@@ -379,9 +377,8 @@ h2.section-title {
     color: var(--ink-2);
 }
 .marquee.on .marquee-track { animation-play-state: running; }
-/* 滚动中冻结循环动画，停稳再播，减少合成压力 */
+/* 仅首页跑马灯在滚动时暂停；不在 html 上切换以免整页样式失效 */
 html.is-scrolling .marquee-track { animation-play-state: paused !important; }
-html.is-scrolling [data-reveal] { transition: none; }
 .marquee-track span { white-space: nowrap; opacity: .9; }
 .marquee-track span em {
     font-style: normal;
@@ -431,7 +428,6 @@ html.is-scrolling [data-reveal] { transition: none; }
     color: transparent;
 }
 .feature h3 { font-size: 20px; margin-bottom: 8px; letter-spacing: -.02em; color: var(--ink); }
-.feature p { color: var(--muted); font-size: 14.5px; }
 
 .section-head {
     display: flex;
@@ -456,8 +452,6 @@ html.is-scrolling [data-reveal] { transition: none; }
     box-shadow: var(--shadow);
 }
 .about-card h2 { margin-bottom: 16px; color: var(--ink); }
-.about-card p { color: var(--muted); font-size: 16px; margin-bottom: 14px; }
-.about-card p strong { color: var(--ink); font-weight: 700; }
 .stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -518,8 +512,7 @@ html.is-scrolling [data-reveal] { transition: none; }
     margin-bottom: 10px;
     letter-spacing: .06em;
 }
-.tl h3 { font-size: 18px; margin-bottom: 8px; letter-spacing: -.02em; color: var(--ink); }
-.tl p { color: var(--muted); font-size: 14px; }
+.tl h3 { font-size: 18px; letter-spacing: -.02em; color: var(--ink); }
 
 .skill-filters {
     display: flex;
@@ -607,6 +600,9 @@ html.is-scrolling [data-reveal] { transition: none; }
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
+    /* 减少滚动时整树样式计算 */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 640px;
 }
 .work {
     position: relative;
@@ -616,28 +612,34 @@ html.is-scrolling [data-reveal] { transition: none; }
     aspect-ratio: 4/3;
     background: var(--surface-2);
     border: 1px solid var(--line);
-    transition: transform .2s var(--ease-out), border-color .2s var(--ease-out);
-    contain: layout paint;
+    /* 只过渡边色，避免滚动中 transform 重绘 */
+    transition: border-color .15s ease;
+    contain: layout paint style;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 240px;
+    /* 不给常驻 will-change，进视口再靠 IO 淡入 */
+    transform: translateZ(0);
 }
-.work:active { transform: scale(.985); }
+.work:active { transform: translateZ(0) scale(.985); transition-duration: .1s; }
 .work.hide { display: none; }
 .work img {
     width: 100%; height: 100%;
     object-fit: cover;
-    transition: transform .35s ease;
+    /* 悬停缩放仅精确指针设备；滚动中禁用 transition */
+    transition: none;
+    transform: translateZ(0);
 }
-.work:hover { border-color: var(--blue-soft); }
-.work:hover img { transform: scale(1.03); }
 .work-meta {
     position: absolute;
     inset: auto 0 0 0;
     padding: 48px 18px 18px;
     background: linear-gradient(to top, rgba(23, 50, 79, 0.88), transparent);
-    transform: translateY(8px);
+    transform: none;
     opacity: 0;
-    transition: .25s;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility 0s linear .2s;
+    pointer-events: none;
 }
-.work:hover .work-meta { transform: none; opacity: 1; }
 .work-meta strong { display: block; font-size: 17px; letter-spacing: -.02em; color: #fff; }
 .work-meta span {
     display: inline-block;
@@ -662,6 +664,17 @@ html.is-scrolling [data-reveal] { transition: none; }
     background: rgba(255, 255, 255, 0.94);
     border: 1px solid var(--line-strong);
     color: var(--ink);
+    pointer-events: none;
+}
+/* 悬停动效：仅鼠标设备，且不叠在滚动路径上 */
+@media (hover: hover) and (pointer: fine) {
+    .work:hover { border-color: var(--blue-soft); }
+    .work:hover img { transform: translateZ(0) scale(1.03); transition: transform .3s ease; }
+    .work:hover .work-meta {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity .2s ease, visibility 0s;
+    }
 }
 
 .gb-layout {
@@ -762,7 +775,6 @@ html.is-scrolling [data-reveal] { transition: none; }
     margin-bottom: 12px;
     color: var(--ink);
 }
-.contact-banner p { color: var(--ink-2); max-width: 28ch; font-weight: 500; }
 .contact-side { display: grid; gap: 14px; }
 .contact-tile {
     padding: 22px 24px;
@@ -825,8 +837,10 @@ html.is-scrolling [data-reveal] { transition: none; }
     background: linear-gradient(90deg, #fff5f8, #eef6ff);
 }
 .link-row:active { transform: scale(.985); }
+.link-row > div:first-child { min-width: 0; flex: 1; }
 .link-row strong { font-size: clamp(20px, 3vw, 28px); font-weight: 900; letter-spacing: -.03em; }
 .link-row span { color: var(--muted); font-weight: 600; font-size: 14px; }
+.link-row .icon svg { width: 22px; height: 22px; fill: #fff; display: block; }
 
 footer {
     border-top: 1px solid var(--line);
@@ -886,18 +900,6 @@ footer a:hover { color: var(--pink-deep); }
 .modal-img.loaded { opacity: 1; }
 .modal h3 { font-size: 22px; margin-bottom: 6px; letter-spacing: -.03em; color: var(--ink); }
 .modal p { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
-.modal .btn-primary {
-    box-shadow: 0 6px 18px rgba(47,111,168,.30);
-    transition: all .15s var(--ease-out);
-}
-.modal .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(47,111,168,.40);
-}
-.modal .btn-primary:active {
-    transform: scale(.95);
-    box-shadow: 0 4px 12px rgba(47,111,168,.25);
-}
 .lightbox img {
     max-width: min(92vw, 1100px);
     max-height: 86vh;
@@ -1014,7 +1016,7 @@ footer a:hover { color: var(--pink-deep); }
     .page.active,
     .curtain.play { animation: none !important; }
     [data-reveal] { opacity: 1; transition: none; }
-    .work:hover img { transform: none; }
+    .work:hover img { transform: none !important; transition: none !important; }
     /* 手机保留课程表式点按反馈 */
     .btn:active,
     .chip:active,
@@ -1060,12 +1062,10 @@ footer a:hover { color: var(--pink-deep); }
                 <div class="hero-copy">
                     <div class="eyebrow">Personal Site · 2026</div>
                     <h1 class="display">
-                        <span class="line"><span>别只是</span></span>
-                        <span class="line"><span class="grad-text">刷网页，</span></span>
-                        <span class="line"><span>来造网页。</span></span>
+                        <span class="line"><span>你好，我是</span></span>
+                        <span class="line"><span class="grad-text">WQQ</span></span>
                     </h1>
-                    <p class="lede" style="margin-top:22px">我是 WQQ。白天写代码、做界面，晚上拍照、折腾小工具。这里放我的作品、技能，以及一点不正经的自我介绍。</p>
-                    <div class="btn-row">
+                    <div class="btn-row" style="margin-top:28px">
                         <button class="btn btn-primary" type="button" onclick="go('works')">看看作品</button>
                         <button class="btn btn-ghost" type="button" onclick="go('about')">认识我</button>
                     </div>
@@ -1074,7 +1074,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div class="avatar-wrap">
                         <img class="avatar" id="avatar" src="r2/img/avatar.webp" alt="WQQ" decoding="async" fetchpriority="high" width="280" height="280">
                     </div>
-                    <div class="hero-badge">在线接活 · <b>可聊合作</b></div>
+                    <div class="hero-badge">目前状态 · <b>可聊合作</b></div>
                 </div>
             </section>
 
@@ -1089,22 +1089,19 @@ footer a:hover { color: var(--pink-deep); }
                 <article class="feature" data-reveal>
                     <div class="feature-num grad-text">01</div>
                     <div>
-                        <h3>会写，也会画</h3>
-                        <p>不满足于「能跑就行」。交互、排版、节奏感，一起抓。</p>
+                        <h3>代码与设计</h3>
                     </div>
                 </article>
                 <article class="feature" data-reveal>
                     <div class="feature-num grad-text">02</div>
                     <div>
                         <h3>边做边学</h3>
-                        <p>新技术上手快，旧项目也敢推倒重来。迭代是我的日常。</p>
                     </div>
                 </article>
                 <article class="feature" data-reveal>
                     <div class="feature-num grad-text">03</div>
                     <div>
-                        <h3>作品说话</h3>
-                        <p>风景、建筑、界面截图——把看过的世界和做过的页面都存档。</p>
+                        <h3>作品记录</h3>
                     </div>
                 </article>
             </div>
@@ -1117,50 +1114,40 @@ footer a:hover { color: var(--pink-deep); }
             <div class="section-head" data-reveal>
                 <div>
                     <div class="eyebrow">About</div>
-                    <h2 class="section-title">关于这个<span class="grad-text">人</span></h2>
-                    <p class="lede">不是完美人设，只是一个还在路上的创造者。</p>
+                    <h2 class="section-title">关于<span class="grad-text">我</span></h2>
                 </div>
             </div>
 
             <div class="about-hero">
                 <div class="about-card" data-reveal>
                     <h2 style="font-size:clamp(26px,4vw,36px);letter-spacing:-.04em">你好，我是 WQQ。</h2>
-                    <p>我喜欢把模糊的想法，压成<strong>能点、能滑、能分享</strong>的东西。课程表、个人站、小工具……都是这么来的。</p>
-                    <p>写代码时偏执细节，拍照时只追光线。屏幕内外，我都想把普通日子过得有点声响。</p>
-                    <p>现阶段目标：把前端功底打扎实，多做有温度的项目，也多出去走走按下快门。</p>
                     <div class="btn-row">
                         <button class="btn btn-primary" type="button" onclick="go('works')">浏览作品</button>
                         <button class="btn btn-ghost" type="button" onclick="go('contact')">联系我</button>
                     </div>
                 </div>
                 <div class="stats">
-                    <div class="stat" data-reveal><b>20+</b><span>做过的小项目</span></div>
-                    <div class="stat" data-reveal><b>∞</b><span>想试的新点子</span></div>
-                    <div class="stat" data-reveal><b>3+</b><span>年写代码</span></div>
-                    <div class="stat" data-reveal><b>24h</b><span>好奇心续航</span></div>
+                    <div class="stat" data-reveal><b>20+</b><span>小项目</span></div>
+                    <div class="stat" data-reveal><b>3+</b><span>年经验</span></div>
                 </div>
             </div>
 
             <div class="timeline">
                 <article class="tl" data-reveal>
                     <div class="year">2024 — NOW</div>
-                    <h3>技术深水区</h3>
-                    <p>啃前端体系，优化体验，把「能用」推到「好用、耐看」。</p>
+                    <h3>专注前端</h3>
                 </article>
                 <article class="tl" data-reveal>
                     <div class="year">2023</div>
                     <h3>项目实战</h3>
-                    <p>从作业到真实需求，学会取舍、协作与按时交付。</p>
                 </article>
                 <article class="tl" data-reveal>
                     <div class="year">2022</div>
-                    <h3>系统开窍</h3>
-                    <p>开始认真学编程，第一次感到「逻辑原来可以这么好玩」。</p>
+                    <h3>开始学编程</h3>
                 </article>
                 <article class="tl" data-reveal>
                     <div class="year">更早</div>
-                    <h3>兴趣点火</h3>
-                    <p>对着屏幕发呆也能兴奋半天——数字世界对我有瘾。</p>
+                    <h3>最初兴趣</h3>
                 </article>
             </div>
         </div>
@@ -1172,8 +1159,8 @@ footer a:hover { color: var(--pink-deep); }
             <div class="section-head" data-reveal>
                 <div>
                     <div class="eyebrow">Skills</div>
-                    <h2 class="section-title">我能<span class="grad-text">干什么</span></h2>
-                    <p class="lede">不装全能，只亮真正上手过的家伙。</p>
+                    <h2 class="section-title">我的<span class="grad-text">技能</span></h2>
+                    <p class="lede">只列真正用过的。</p>
                 </div>
             </div>
 
@@ -1189,7 +1176,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div>
                         <div class="tag">Core</div>
                         <h3>HTML / CSS</h3>
-                        <p>布局、响应式、动效底座。页面骨相先立住。</p>
+                        <p>布局、响应式与动效基础。</p>
                     </div>
                     <div class="meter" style="--w:92%"><i></i></div>
                 </article>
@@ -1197,7 +1184,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div>
                         <div class="tag">Logic</div>
                         <h3>JavaScript</h3>
-                        <p>交互逻辑、接口对接、小动画。</p>
+                        <p>交互逻辑、接口对接与小动画。</p>
                     </div>
                     <div class="meter" style="--w:86%"><i></i></div>
                 </article>
@@ -1205,7 +1192,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div>
                         <div class="tag">Framework</div>
                         <h3>Vue / React</h3>
-                        <p>组件化思路，按需选型。</p>
+                        <p>组件化开发，按需选型。</p>
                     </div>
                     <div class="meter" style="--w:74%"><i></i></div>
                 </article>
@@ -1213,7 +1200,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div>
                         <div class="tag">Workflow</div>
                         <h3>Git / GitHub</h3>
-                        <p>分支、协作、自动部署流程。</p>
+                        <p>分支管理、协作与自动部署。</p>
                     </div>
                     <div class="meter" style="--w:84%"><i></i></div>
                 </article>
@@ -1221,7 +1208,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div>
                         <div class="tag">Editor</div>
                         <h3>VS Code</h3>
-                        <p>快捷键与插件流，效率优先。</p>
+                        <p>日常编辑器，效率优先。</p>
                     </div>
                     <div class="meter" style="--w:90%"><i></i></div>
                 </article>
@@ -1229,7 +1216,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div>
                         <div class="tag">Cross</div>
                         <h3>小程序 &amp; 响应式</h3>
-                        <p>从手机到桌面，同一套体验逻辑适配不同屏幕。</p>
+                        <p>适配手机到桌面的不同屏幕。</p>
                     </div>
                     <div class="meter" style="--w:80%"><i></i></div>
                 </article>
@@ -1237,7 +1224,7 @@ footer a:hover { color: var(--pink-deep); }
                     <div>
                         <div class="tag">Ship</div>
                         <h3>Docker / CI·CD / PWA</h3>
-                        <p>让项目能持续发布，而不是只在本地闪闪发光。</p>
+                        <p>方便持续构建与发布上线。</p>
                     </div>
                     <div class="meter" style="--w:58%"><i></i></div>
                 </article>
@@ -1251,8 +1238,8 @@ footer a:hover { color: var(--pink-deep); }
             <div class="section-head" data-reveal>
                 <div>
                     <div class="eyebrow">Works</div>
-                    <h2 class="section-title">光影<span class="grad-text">作品集</span></h2>
-                    <p class="lede">旅途里的风景与建筑。点开可放大细看。</p>
+                    <h2 class="section-title">我的<span class="grad-text">作品</span></h2>
+                    <p class="lede">点击可放大</p>
                 </div>
                 <div class="skill-filters" id="workFilters" style="margin:0">
                     <button class="chip on" data-w="all" type="button">全部</button>
@@ -1271,8 +1258,7 @@ footer a:hover { color: var(--pink-deep); }
             <div class="section-head" data-reveal>
                 <div>
                     <div class="eyebrow">Guestbook</div>
-                    <h2 class="section-title">留下你的<span class="grad-text">痕迹</span></h2>
-                    <p class="lede">夸我、吐槽、丢个梗，都欢迎。</p>
+                    <h2 class="section-title">给我<span class="grad-text">留言</span></h2>
                 </div>
             </div>
             <div class="gb-layout">
@@ -1280,11 +1266,11 @@ footer a:hover { color: var(--pink-deep); }
                     <h3>发一条</h3>
                     <div class="field">
                         <label for="gbName">昵称</label>
-                        <input id="gbName" maxlength="20" placeholder="怎么称呼你？">
+                        <input id="gbName" maxlength="20" placeholder="你的昵称">
                     </div>
                     <div class="field">
                         <label for="gbText">内容</label>
-                        <textarea id="gbText" maxlength="300" placeholder="想说的话（最多 300 字）"></textarea>
+                        <textarea id="gbText" maxlength="300" placeholder="留言内容（最多 300 字）"></textarea>
                     </div>
                     <button class="btn btn-primary" id="gbSubmit" type="button" onclick="submitGuestbook()">发送留言</button>
                     <div class="gb-msg" id="gbMsg"></div>
@@ -1305,14 +1291,13 @@ footer a:hover { color: var(--pink-deep); }
             <div class="section-head" data-reveal>
                 <div>
                     <div class="eyebrow">Contact</div>
-                    <h2 class="section-title">来<span class="grad-text">打个招呼</span></h2>
+                    <h2 class="section-title">联系<span class="grad-text">我</span></h2>
                 </div>
             </div>
 
             <div class="contact-hero">
                 <div class="contact-banner" data-reveal>
-                    <h2>一起做点<br>有意思的。</h2>
-                    <p>项目合作、闲聊扯淡、或者只是想看看我在捣鼓什么——消息我都会看。</p>
+                    <h2>有想法，<br>欢迎联系。</h2>
                 </div>
                 <div class="contact-side">
                     <button class="contact-tile" type="button" data-reveal onclick="showQR('wechat')">
@@ -1325,23 +1310,30 @@ footer a:hover { color: var(--pink-deep); }
                     </button>
                     <button class="contact-tile" type="button" data-reveal onclick="window.open('https://github.com/WANG040714','_blank')">
                         <div><strong>GitHub</strong><span>WANG040714</span></div>
-                        <div class="icon github">⌘</div>
+                        <div class="icon github" aria-hidden="true"><svg viewBox="0 0 16 16" width="22" height="22" fill="#fff"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></div>
                     </button>
                 </div>
             </div>
 
             <div class="link-list">
                 <button class="link-row" type="button" data-reveal onclick="window.location.href='mailto:2776802896@qq.com'">
-                    <strong>Email me</strong>
-                    <span>2776802896@qq.com</span>
+                    <div>
+                        <strong>Email me</strong>
+                        <span>2776802896@qq.com</span>
+                    </div>
+                    <div class="icon email" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"/></svg></div>
                 </button>
                 <button class="link-row" type="button" data-reveal onclick="showQR('douyin')">
-                    <strong>抖音</strong>
-                    <span>名字二百买的 · 点开看号</span>
+                    <div>
+                        <strong>抖音</strong>
+                    </div>
+                    <div class="icon douyin" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.3a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.73a8.19 8.19 0 0 0 4.76 1.52V6.8a4.85 4.85 0 0 1-1-.11z"/></svg></div>
                 </button>
                 <button class="link-row" type="button" data-reveal onclick="showQR('pay')">
-                    <strong>请我喝蜜雪</strong>
-                    <span>一杯冰鲜柠檬水就满足</span>
+                    <div>
+                        <strong>请我喝蜜雪</strong>
+                    </div>
+                    <div class="icon pay" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M4.5 7.5h13l-1.2 11.1A2 2 0 0 1 14.31 20H6.69a2 2 0 0 1-1.99-1.4L3.5 7.5h1zm2-2h11a1 1 0 1 1 0 2h-1v1h1a3 3 0 1 0 0-6h-11a1 1 0 1 0 0 2h1v-1h-1a1 1 0 1 0 0 2zm3.5 5v2.2c-.7.3-1.2 1-1.2 1.8 0 1.1.9 2 2 2s2-.9 2-2c0-.8-.5-1.5-1.2-1.8V10.5h-1.6zm0 4c-.2 0-.4.2-.4.4s.2.4.4.4.4-.2.4-.4-.2-.4-.4-.4z"/></svg></div>
                 </button>
             </div>
         </div>
@@ -1363,7 +1355,7 @@ footer a:hover { color: var(--pink-deep); }
     <button class="back-top" id="backTop" type="button" aria-label="回到顶部" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
     <footer>
-        <p>© 2026 <a href="#" onclick="go('home'); return false;">WQQ</a> · 用渐变对抗无聊</p>
+        <p>© 2026 <a href="#" onclick="go('home'); return false;">WQQ</a></p>
         <div class="stats">
             <span>访问 <b id="statTotal">–</b></span>
             <span>访客 <b id="statIps">–</b></span>
@@ -1439,7 +1431,7 @@ footer a:hover { color: var(--pink-deep); }
             if (grid.dataset.done === '1') return;
             grid.innerHTML = works.map((w, i) => `
                 <article class="work" data-tag="${w.tag}" data-reveal onclick="openLightbox('${w.src}')">
-                    <img src="${w.src}" alt="${w.title}" loading="lazy" decoding="async" width="800" height="600">
+                    <img src="${w.src}" alt="${w.title}" loading="lazy" decoding="async" fetchpriority="low" width="800" height="600">
                     <div class="work-num">${String(i + 1).padStart(2, '0')}</div>
                     <div class="work-meta">
                         <strong>${w.title}</strong>
@@ -1460,7 +1452,7 @@ footer a:hover { color: var(--pink-deep); }
             wechat: { src: 'r2/img/qr-wechat.webp', title: '微信', desc: '扫码添加好友' },
             qq: { src: 'r2/img/qr-qq.webp', title: 'QQ', desc: 'QQ号: 2776802896' },
             douyin: { src: 'r2/img/qr-douyin.webp', title: '抖音', desc: '抖音号: 164861949u' },
-            pay: { src: 'r2/img/qr-pay.webp', title: '请我喝蜜雪', desc: '支付宝扫一扫，请我喝一杯蜜雪冰城' }
+            pay: { src: 'r2/img/qr-pay.webp', title: '请我喝蜜雪', desc: '支付宝扫码' }
         };
 
         function showQR(type) {
@@ -1541,7 +1533,7 @@ footer a:hover { color: var(--pink-deep); }
                 const data = await resp.json();
                 if (!data.ok) throw new Error(data.error || '加载失败');
                 if (!data.messages.length) {
-                    list.innerHTML = '<div class="gb-empty">还没有留言，来抢沙发。</div>';
+                    list.innerHTML = '<div class="gb-empty">还没有留言。</div>';
                     return;
                 }
                 list.innerHTML = data.messages.map(m => `
@@ -1639,16 +1631,22 @@ footer a:hover { color: var(--pink-deep); }
         let lastShowTop = false;
         let scrollStopTimer = 0;
         let pageScrolling = false;
+        // 仅首页有跑马灯时才在 html 上挂 is-scrolling，避免作品页整页样式失效
+        function hasActiveMarquee() {
+            return !!document.querySelector('.page.active .marquee');
+        }
         window.addEventListener('scroll', () => {
-            if (!pageScrolling) {
+            if (!pageScrolling && hasActiveMarquee()) {
                 pageScrolling = true;
                 document.documentElement.classList.add('is-scrolling');
             }
-            clearTimeout(scrollStopTimer);
-            scrollStopTimer = setTimeout(() => {
-                pageScrolling = false;
-                document.documentElement.classList.remove('is-scrolling');
-            }, 160);
+            if (pageScrolling) {
+                clearTimeout(scrollStopTimer);
+                scrollStopTimer = setTimeout(() => {
+                    pageScrolling = false;
+                    document.documentElement.classList.remove('is-scrolling');
+                }, 160);
+            }
 
             if (scrollTick) return;
             scrollTick = true;
