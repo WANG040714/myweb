@@ -1,4 +1,4 @@
-﻿// Cloudflare Pages _worker.js —— WQQ 网站访问记录 + 安全防护 + 留言板 API + 设备识别
+// Cloudflare Pages _worker.js —— WQQ 网站访问记录 + 安全防护 + 留言板 API + 设备识别
 // 功能：
 // 1. 安全防护：拦截漏洞路径扫描（wp-includes/xmlrpc.php 等）和已知恶意爬虫
 // 2. 每次访问记录真实 IP + 时间 + 页面 + 浏览器 + 城市/运营商 + 设备型号到 KV
@@ -303,9 +303,10 @@ export default {
 // 查询 IP 城市信息（带 KV 缓存，避免每次访问都打第三方接口）
 async function getGeo(env, ip) {
   if (!ip || ip === '-') return null;
+  const cacheKey = new Request('https://geo-cache.internal/geo/' + ip);
   try {
-    const cached = await env.VISITS.get('geo:' + ip);
-    if (cached) return JSON.parse(cached);
+    const cached = await caches.default.match(cacheKey);
+    if (cached) return await cached.json();
   } catch (e) {}
   try {
     const resp = await fetch(
@@ -315,8 +316,10 @@ async function getGeo(env, ip) {
     const data = await resp.json();
     if (data && data.status === 'success') {
       const geo = { city: data.city || null, region: data.regionName || null, isp: data.isp || null };
-      // 缓存 30 天
-      await env.VISITS.put('geo:' + ip, JSON.stringify(geo), { expirationTtl: 2592000 }).catch(() => {});
+      const cacheResp = new Response(JSON.stringify(geo), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=2592000' }
+      });
+      try { await caches.default.put(cacheKey, cacheResp); } catch (e) {}
       return geo;
     }
   } catch (e) {}
@@ -326,39 +329,52 @@ async function getGeo(env, ip) {
 async function recordVisit(request, env, url) {
   const ip = request.headers.get('CF-Connecting-IP') || '-';
   const country = request.headers.get('CF-IPCountry') || '-';
-  const ua = (request.headers.get('User-Agent') || '-').slice(0, 300);
+  const ua = (request.headers.get('User-Agent') || '-').slice(0, 200);
+
+  // Skip bots entirely (no KV write)
+  const uaLower = ua.toLowerCase();
+  if (KNOWN_BOTS.some(b => uaLower.includes(b)) || /bot|spider|crawl|slurp|scan|monitor|headless|curl|wget|python|java|node|measurement|validus/i.test(uaLower)) {
+    return;
+  }
+
+  // Cache-API dedup: same IP within 10 min = skip (0 KV ops)
+  const dedupKey = new Request('https://visit-dedup.internal/' + ip);
+  try {
+    const hit = await caches.default.match(dedupKey);
+    if (hit) return;
+    const putResp = new Response('1', { headers: { 'Cache-Control': 'public, max-age=600' } });
+    try { await caches.default.put(dedupKey, putResp); } catch (e) {}
+  } catch (e) {}
+
   const path = url.pathname;
   const t = Date.now();
   const geo = await getGeo(env, ip);
   const device = detectDevice(ua);
-  // key 唯一：时间戳 + IP + 随机串
   const key = `v:${t}:${ip}:${Math.random().toString(36).slice(2, 8)}`;
-  await env.VISITS.put(
-    key,
-    JSON.stringify({
-      ip,
-      country,
-      city: geo ? geo.city : null,
-      region: geo ? geo.region : null,
-      isp: geo ? geo.isp : null,
-      path,
-      ua,
-      t,
-      dev: device, // { type, brand, model, os, browser }
-    })
-  );
+  await env.VISITS.put(key, JSON.stringify({
+    ip, country,
+    city: geo ? geo.city : null,
+    region: geo ? geo.region : null,
+    isp: geo ? geo.isp : null,
+    path, ua, t,
+    dev: device,
+  }));
 }
 
 // ---------- 留言板 ----------
 
-// 读取最近 100 条留言（倒序）
+// Read last 100 messages (batch KV read, 1 op per 100 keys)
 async function handleGuestbookGet(env) {
   const msgs = [];
   try {
-    const list = await env.VISITS.list({ prefix: 'g:', limit: 200 });
-    for (const k of list.keys) {
-      const v = await env.VISITS.get(k.name);
-      if (v) msgs.push(JSON.parse(v));
+    const list = await env.VISITS.list({ prefix: 'g:', limit: 100 });
+    if (list.keys.length === 0) return json({ ok: true, messages: [] });
+    const map = await env.VISITS.get(list.keys.map(k => k.name));
+    if (map && typeof map.get === 'function') {
+      for (const k of list.keys) {
+        const v = map.get(k.name);
+        if (v) { try { msgs.push(JSON.parse(v)); } catch (e) {} }
+      }
     }
   } catch (e) {
     return json({ ok: false, error: '读取留言失败' }, 500);
@@ -401,26 +417,12 @@ async function handleGuestbookPost(request, env) {
 // ---------- 访问统计 API ----------
 
 // 游标分页遍历所有 v: 前缀键（避免 limit 截断导致新记录读不到）
-async function listAllVisitKeys(env, pageSize = 1000) {
-  const keys = [];
-  let cursor;
-  let guard = 0;
-  for (;;) {
-    const opts = { prefix: 'v:', limit: pageSize };
-    if (cursor) opts.cursor = cursor;
-    const list = await env.VISITS.list(opts);
-    // 防御：没返回键则停止
-    if (!list.keys || list.keys.length === 0) break;
-    for (const k of list.keys) keys.push(k.name);
-    // 无游标则分页结束；游标未推进则终止防死循环
-    if (!list.cursor) break;
-    if (list.cursor === cursor) break;
-    cursor = list.cursor;
-    if (++guard > 50) break; // 极端防御
-  }
-  return keys;
+async function listAllVisitKeys(env, limit = 1000) {
+  try {
+    const list = await env.VISITS.list({ prefix: 'v:', limit });
+    return list.keys ? list.keys.map(k => k.name) : [];
+  } catch (e) { return []; }
 }
-
 // 分批读取 KV 值：使用官方批量 get(keys[]) API（最多100键/次，仅计1次 operation），
 // 避免逐个 get + Promise.all 高并发触发 KV 操作限制导致部分键静默 null
 async function readVisitValues(env, keys, chunk = 100) {
