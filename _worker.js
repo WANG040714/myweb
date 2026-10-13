@@ -10,6 +10,8 @@
 // ---------- 安全防护：恶意路径 / 爬虫黑名单 ----------
 // 统计只看最近 N 天的记录（更早的历史键不再参与聚合）
 const STATS_WINDOW_DAYS = 30;
+// 统计每次最多读取的记录数（KV 批量读按 key 计费，窗口越小读配额越安全）
+const STATS_MAX_RECORDS = 300;
 const MALICIOUS_PATHS = [
   '/wp-admin', '/wp-login', '/wp-includes', '/xmlrpc.php', '/wlwmanifest.xml',
   '/.env', '/.git/', '/config.php', '/phpinfo.php', '/admin.php', '/shell',
@@ -435,14 +437,14 @@ async function handleGuestbookPost(request, env) {
 // ---------- 访问统计 API ----------
 
 // 游标分页遍历所有 v: 前缀键（避免 limit 截断导致新记录读不到）
-async function listAllVisitKeys(env, limit = 1000) {
+async function listAllVisitKeys(env, limit = STATS_MAX_RECORDS) {
   try {
     const list = await env.VISITS.list({ prefix: 'v:', limit });
     return list.keys ? list.keys.map(k => k.name) : [];
   } catch (e) { return []; }
 }
-// 分批读取 KV 值：使用官方批量 get(keys[]) API（最多100键/次，仅计1次 operation），
-// 避免逐个 get + Promise.all 高并发触发 KV 操作限制导致部分键静默 null
+// 分批读取 KV 值：使用官方批量 get(keys[]) API（最多 100 键/次）。
+// 注意：批量读的配额按 key 数计算，所以统计窗口要尽量小。
 async function readVisitValues(env, keys, chunk = 100) {
   const values = [];
   for (let i = 0; i < keys.length; i += chunk) {
