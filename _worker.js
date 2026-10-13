@@ -18,14 +18,20 @@ const MALICIOUS_UA = [
   '1337', 'driftnet', 'internetmeasurement', 'masscan', 'nmap', 'zgrab',
   'sqlmap', 'nikto', 'acunetix', 'nessus', 'fimap', 'wpscan', 'joomscan',
   'python-requests', 'python-urllib', 'curl/', 'wget', 'libwww', 'scrapy',
-  'go-http-client', 'http-client', 'okhttp', 'apache-httpclient', 'maven'
+  'go-http-client', 'http-client', 'okhttp', 'apache-httpclient', 'maven',
+  'l9scan', 'leakix', 'nuclei', 'reconx', 'cms-checker', 'xray', 'goby',
+  'dirbuster', 'gobuster', 'feroxbuster', 'wfuzz', 'metasploit', 'httpx'
 ];
+// 恶意路径正则：.env / .git / php / 各类配置探测，出现在路径任意位置都拦截
+const MALICIOUS_PATH_RE = /(^|\/)\.(env|git|svn|ssh|aws|npmrc|htaccess|htpasswd|ds_store)|phpinfo|xmlrpc|wp-(admin|login|includes|content|json)|(^|\/)(laravel|prestashop|bedrock|smtp|uploads|scripts|vendor|backup|old_phpinfo|server-status|actuator|docker)(\/|$)|\.php(\/|$)|\.ya?ml$/i;
 // 正规爬虫（放行，但标记为 bot 不计入真实访客）
 const KNOWN_BOTS = [
   'googlebot', 'bingbot', 'baiduspider', 'sogou', '360spider', 'yandex',
   'duckduckbot', 'facebookexternalhit', 'twitterbot', 'slurp', 'bytespider',
   'claudebot', 'gptbot', 'chatgpt', 'anthropic', 'semrush', 'ahrefs',
-  'petalbot', 'applebot', 'linkedinbot', 'pinterest'
+  'petalbot', 'applebot', 'linkedinbot', 'pinterest',
+  'deepseekbot', 'xai-searchbot', 'perplexitybot', 'amazonbot', 'oai-searchbot',
+  'uptimerobot', 'pingdom', 'statuscake', 'betteruptime', 'site24x7'
 ];
 
 // ---------- 机型代码 → 商业名称映射表（Android UA 报的是内部型号代码） ----------
@@ -237,7 +243,11 @@ export default {
     // ========== 安全防护层 ==========
     const pathLower = url.pathname.toLowerCase();
     // 拦截漏洞路径扫描（直接 403，不记录）
-    if (MALICIOUS_PATHS.some(p => pathLower.startsWith(p))) {
+    if (MALICIOUS_PATHS.some(p => pathLower.startsWith(p)) || MALICIOUS_PATH_RE.test(pathLower)) {
+      return new Response('403 Forbidden', { status: 403 });
+    }
+    // 无 User-Agent 的请求基本都是扫描器/脚本（正常浏览器一定带 UA）
+    if (!ua || !ua.trim()) {
       return new Response('403 Forbidden', { status: 403 });
     }
     // 拦截已知恶意扫描器 UA
@@ -281,9 +291,10 @@ export default {
       }
     }
 
-    // 记录访问（waitUntil 保证写入在响应后完成；只记录文档请求，跳过静态资源和 API）
-    const isAsset = /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|map|txt)$/i.test(url.pathname);
-    if (!isAsset && !url.pathname.startsWith('/api/') && request.method === 'GET') {
+    // 记录访问（waitUntil 保证写入在响应后完成）
+    // 只记录真正的页面浏览（/、目录、.html），扫描器探测的随机路径一律不写 KV
+    const isPage = url.pathname === '/' || url.pathname.endsWith('/') || /\.html?$/i.test(url.pathname);
+    if (isPage && request.method === 'GET') {
       ctx.waitUntil(recordVisit(request, env, url).catch(() => {}));
     }
 
@@ -337,13 +348,15 @@ async function recordVisit(request, env, url) {
     return;
   }
 
-  // Cache-API dedup: same IP within 10 min = skip (0 KV ops)
-  const dedupKey = new Request('https://visit-dedup.internal/' + ip);
+  // 去重：同一 IP 每小时只记一条（Cache API，零 KV 开销）
+  const hourBucket = Math.floor(Date.now() / 3600000);
+  const dedupKey = new Request('https://visit-dedup.internal/' + hourBucket + '/' + ip);
   try {
     const hit = await caches.default.match(dedupKey);
     if (hit) return;
-    const putResp = new Response('1', { headers: { 'Cache-Control': 'public, max-age=600' } });
-    try { await caches.default.put(dedupKey, putResp); } catch (e) {}
+    try {
+      await caches.default.put(dedupKey, new Response('1', { headers: { 'Cache-Control': 'public, max-age=3600' } }));
+    } catch (e) {}
   } catch (e) {}
 
   const path = url.pathname;
@@ -450,6 +463,12 @@ async function readVisitValues(env, keys, chunk = 100) {
 }
 
 async function handleStatsApi(env) {
+  // 结果缓存 10 分钟：首页每次加载都会调这个接口，不缓存会反复 list + 批量读 KV
+  const cacheKey = new Request('https://stats-api.internal/summary');
+  try {
+    const cached = await caches.default.match(cacheKey);
+    if (cached) return cached;
+  } catch (e) {}
   try {
     const keys = await listAllVisitKeys(env);
     const ips = new Set();
@@ -462,7 +481,12 @@ async function handleStatsApi(env) {
         try { ips.add(JSON.parse(v).ip); } catch (e) {}
       }
     }
-    return json({ ok: true, total, uniqIps: ips.size });
+    const resp = new Response(JSON.stringify({ ok: true, total, uniqIps: ips.size }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=600' }
+    });
+    try { await caches.default.put(cacheKey, resp.clone()); } catch (e) {}
+    return resp;
   } catch (e) {
     return json({ ok: false, error: '统计失败' }, 500);
   }
