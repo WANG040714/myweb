@@ -8,6 +8,8 @@
 // 城市定位使用 ip-api.com 免费接口（45 次/分钟限速），结果按 IP 缓存 30 天。
 
 // ---------- 安全防护：恶意路径 / 爬虫黑名单 ----------
+// 统计只看最近 N 天的记录（更早的历史键不再参与聚合）
+const STATS_WINDOW_DAYS = 30;
 const MALICIOUS_PATHS = [
   '/wp-admin', '/wp-login', '/wp-includes', '/xmlrpc.php', '/wlwmanifest.xml',
   '/.env', '/.git/', '/config.php', '/phpinfo.php', '/admin.php', '/shell',
@@ -478,10 +480,15 @@ async function handleStatsApi(env) {
     let total = 0;
     // 分批并行读取，避免串行等待
     const values = await readVisitValues(env, keys);
+    const since = Date.now() - STATS_WINDOW_DAYS * 86400000;
     for (const v of values) {
       if (v) {
-        total++;
-        try { ips.add(JSON.parse(v).ip); } catch (e) {}
+        try {
+          const rec = JSON.parse(v);
+          if (rec.t < since) continue;
+          total++;
+          ips.add(rec.ip);
+        } catch (e) {}
       }
     }
     const resp = new Response(JSON.stringify({ ok: true, total, uniqIps: ips.size }), {
@@ -511,8 +518,13 @@ async function handleStats(env, request) {
   try {
     const keys = await listAllVisitKeys(env);
     const values = await readVisitValues(env, keys);
+    const since = Date.now() - STATS_WINDOW_DAYS * 86400000;
     for (const v of values) {
-      if (v) { try { rows.push(JSON.parse(v)); } catch (e) {} }
+      if (!v) continue;
+      try {
+        const rec = JSON.parse(v);
+        if (rec.t >= since) rows.push(rec);
+      } catch (e) {}
     }
   } catch (e) {
     return new Response('统计读取失败：' + e.message, { status: 500 });
@@ -733,7 +745,7 @@ async function handleStats(env, request) {
     <div class="sub">数据实时记录 · 含安全防护与设备识别</div>
   </header>
   <div class="cards">
-    <div class="card"><div class="num">${rows.length}</div><div class="lbl">记录总数（近 1000 条）</div></div>
+    <div class="card"><div class="num">${rows.length}</div><div class="lbl">记录总数（近 ${STATS_WINDOW_DAYS} 天）</div></div>
     <div class="card"><div class="num">${uniqIps.size}</div><div class="lbl">独立 IP</div></div>
     <div class="card"><div class="num">${Object.keys(byDay).length > 0 ? Object.values(byDay).reduce((a, b) => a + b, 0) : 0}</div><div class="lbl">总访问次数</div></div>
   </div>
