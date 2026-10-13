@@ -292,8 +292,9 @@ export default {
     }
 
     // 记录访问（waitUntil 保证写入在响应后完成）
-    // 只记录真正的页面浏览（/、目录、.html），扫描器探测的随机路径一律不写 KV
-    const isPage = url.pathname === '/' || url.pathname.endsWith('/') || /\.html?$/i.test(url.pathname);
+    // 只记录真正的页面浏览（/、/timetable、目录、.html），扫描器探测的随机路径一律不写 KV
+    const isPage = url.pathname === '/' || url.pathname === '/timetable'
+      || url.pathname.endsWith('/') || /\.html?$/i.test(url.pathname);
     if (isPage && request.method === 'GET') {
       ctx.waitUntil(recordVisit(request, env, url).catch(() => {}));
     }
@@ -363,7 +364,9 @@ async function recordVisit(request, env, url) {
   const t = Date.now();
   const geo = await getGeo(env, ip);
   const device = detectDevice(ua);
-  const key = `v:${t}:${ip}:${Math.random().toString(36).slice(2, 8)}`;
+  // 反向时间戳 + "0" 前缀：KV list 只按字典序升序返回，这样新记录排在 1000 条窗口最前
+  const rev = String(9999999999999 - t).padStart(13, '0');
+  const key = `v:0${rev}:${ip}:${Math.random().toString(36).slice(2, 8)}`;
   await env.VISITS.put(key, JSON.stringify({
     ip, country,
     city: geo ? geo.city : null,
@@ -483,7 +486,7 @@ async function handleStatsApi(env) {
     }
     const resp = new Response(JSON.stringify({ ok: true, total, uniqIps: ips.size }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=600' }
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=900' }
     });
     try { await caches.default.put(cacheKey, resp.clone()); } catch (e) {}
     return resp;
