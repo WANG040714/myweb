@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'timetable-v2';
+﻿const CACHE_NAME = 'timetable-v3';
 const URLS = ['/timetable', '/timetable.html'];
 
 self.addEventListener('install', e => {
@@ -15,10 +15,13 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
     e.respondWith(
-        caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
-            const clone = resp.clone();
-            caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        // 联网优先:调课要能立刻看到,断网才用缓存
+        fetch(e.request).then(resp => {
+            if (e.request.method === 'GET') {
+                const clone = resp.clone();
+                caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+            }
             return resp;
-        }))
+        }).catch(() => caches.match(e.request).then(r => r || fetch(e.request)))
     );
 });
