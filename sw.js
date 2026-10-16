@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'timetable-v3';
+﻿const CACHE_NAME = 'timetable-v4';
 const URLS = ['/timetable', '/timetable.html'];
 
 self.addEventListener('install', e => {
@@ -14,14 +14,30 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+    if (e.request.method !== 'GET') return;
+    const url = new URL(e.request.url);
+    if (url.origin !== self.location.origin) return;
+
+    const forceNetwork = url.searchParams.has('_r');
+    url.search = '';
+    const cacheKey = url.toString();
+
+    const updateCache = resp => {
+        if (resp && resp.ok) {
+            const clone = resp.clone();
+            caches.open(CACHE_NAME).then(c => c.put(cacheKey, clone));
+        }
+        return resp;
+    };
+
+    const network = fetch(e.request).then(updateCache);
+    if (forceNetwork) {
+        e.respondWith(network.catch(() => caches.match(cacheKey)));
+        return;
+    }
+
+    // 缓存立即返回,网络响应只负责后台更新
     e.respondWith(
-        // 联网优先:调课要能立刻看到,断网才用缓存
-        fetch(e.request).then(resp => {
-            if (e.request.method === 'GET') {
-                const clone = resp.clone();
-                caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-            }
-            return resp;
-        }).catch(() => caches.match(e.request).then(r => r || fetch(e.request)))
+        caches.match(cacheKey).then(cached => cached || network)
     );
 });

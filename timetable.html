@@ -331,7 +331,7 @@ footer a{color:var(--primary-dark);text-decoration:none;font-weight:600}
 <div class="wrap">
   <div class="topbar">
     <span class="brand">📚 课程表</span>
-    <button class="refresh-btn" onclick="this.classList.add('spinning');setTimeout(()=>location.reload(),400)" title="刷新" aria-label="刷新页面">🔄</button>
+    <button class="refresh-btn" onclick="this.classList.add('spinning');setTimeout(forceRefresh,400)" title="刷新" aria-label="刷新页面">🔄</button>
   </div>
 
   <header>
@@ -596,6 +596,12 @@ function showPopup(emoji, title, sub) {
 function closePopup(e) {
   if (e && e.target !== e.currentTarget) return;
   document.getElementById('classPopup').classList.remove('show');
+}
+
+function forceRefresh() {
+  const url = new URL(location.href);
+  url.searchParams.set('_r', Date.now());
+  location.href = url.toString();
 }
 
 if ('serviceWorker' in navigator) {
