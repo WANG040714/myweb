@@ -365,7 +365,7 @@ footer a{color:var(--primary-dark);text-decoration:none;font-weight:600}
 
   <div class="week-view" id="view-week">
     <div class="week-grid" id="weekGrid"></div>
-    <div class="week-note">注：未特殊标注教室的课程均在学思5号楼505；综合能力提升班上课时间地点另行通知。</div>
+    <div class="week-note">注：未特殊标注教室的课程均在学思5号楼505。</div>
   </div>
 </div>
 
@@ -402,8 +402,8 @@ const COURSES = [
 {day:4,name:'智能农业装备及多学科创新前沿进展',teacher:'徐必勇、曾其良',weeks:[7],s:9,e:10},
 {day:5,name:'试验设计与统计',teacher:'张春燕',weeks:[7,8,9,10],s:1,e:4},
 {day:5,name:'高等工程数学',teacher:'司志远',weeks:[12,13,14,15],s:2,e:4},
-{day:5,name:'公共选修课',teacher:'综合能力提升班',weeks:[9,10,11,12,13,14,15,16],s:5,e:8},
-{day:5,name:'公共选修课',teacher:'',weeks:[9,10,11,12,13,14,15,16],s:9,e:10},
+{day:5,name:'研究生心理健康教育',teacher:'',weeks:[9,10,11,12,13,14,15,16],s:5,e:6,room:'学思5号楼107'},
+{day:5,name:'无线通讯与物联网技术',teacher:'乔印虎、薛鸿翔',weeks:[9,10,11,12,13,14,15,16],s:9,e:10,room:'学思5号楼507'},
 {day:6,name:'高等农业机械学',teacher:'易克传、王晴晴',weeks:[2,3,6],s:5,e:8},
 {day:6,name:'论文写作与学术规范',teacher:'曹波',weeks:[6,7],s:9,e:11},
 {day:6,name:'论文写作与学术规范',teacher:'曹波',weeks:[8],s:9,e:10},
@@ -501,7 +501,7 @@ function renderDay() {
       </div>
       <div class="course-info">
         <div class="course-name">${c.name}</div>
-        <div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)}周</span><span class="room"><span class="dot">·</span>学思5号楼505</span></div>
+        <div class="course-meta">${c.teacher ? '<span>' + c.teacher + '</span><span class="dot">·</span>' : ''}<span>第 ${formatWeeks(c.weeks)}周</span><span class="room"><span class="dot">·</span>${c.room || '学思5号楼505'}</span></div>
       </div>
     </div>`).join('');
 }
@@ -518,11 +518,12 @@ function renderWeek() {
     const isToday = day === todayDay;
     const items = dayCourses.map((c,i) => {
       const teacherText = c.teacher ? `<div class="wc-meta">${c.teacher}</div>` : '';
+      const roomText = c.room ? `<div class="wc-meta">${c.room}</div>` : '';
       return `
         <div class="week-course">
           <div class="wc-name">${c.name}</div>
           <div class="wc-meta">第${formatWeeks(c.weeks)}周 · ${periodLabel(c.s,c.e)}</div>
-          ${teacherText}
+          ${teacherText}${roomText}
         </div>`;
     }).join('');
     return `
@@ -581,7 +582,8 @@ renderWeek();
     const start = toMin(PERIOD_TIME[c.s][0]);
     const diff = start - nowMin;
     if (diff > 0 && diff <= 60) {
-      showPopup('⏰', '还有 ' + diff + ' 分钟上<br>「' + c.name + '」', '时间：' + formatPeriod(c.s, c.e) + ' · ' + c.teacher);
+      const detail = [c.teacher, c.room].filter(Boolean).join(' · ');
+      showPopup('⏰', '还有 ' + diff + ' 分钟上<br>「' + c.name + '」', '时间：' + formatPeriod(c.s, c.e) + (detail ? ' · ' + detail : ''));
       return;
     }
   }
