@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'timetable-v4';
+﻿const CACHE_NAME = 'timetable-v5';
 const URLS = ['/timetable', '/timetable.html'];
 
 self.addEventListener('install', e => {
